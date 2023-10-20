@@ -167,22 +167,7 @@ def train_model(data_validation_method,ingest_data) -> tuple:
         #                         'r2_score':accuracy_value}])
 
     experiment.log_metrics(metrics_dict)
-    # max_value = -1
-    # total_max = -1
-    # for i in range(len(model_n_score)):
-    #   max_value = -10000000
-    #   cur_model_n_score_list = model_n_score[i]
-    #   cur_dict = cur_model_n_score_list[0]
-    #   if cur_dict['r2_score']*100 > max_value:
-    #     max_value = cur_dict['r2_score']
-    #     if max_value *100 > total_max *100:
-    #       total_max = max_value
-    #       better_model = cur_dict['model_name']
-    #     else:
-    #       continue
-          
-    #   else:
-    #     continue
+   
 
 
     # pickle.dump(better_model,open("house-model.pkl",'wb'))
