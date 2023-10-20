@@ -1,0 +1,3287 @@
+<!--
+    ~ ----------------------------------------------------------------------------
+    ~ Copyright (C) 2021-2022 Deepchecks (https://www.deepchecks.com)
+    ~
+    ~ This file is part of Deepchecks.
+    ~ Deepchecks is distributed under the terms of the GNU Affero General
+    ~ Public License (version 3 or later).
+    ~ You should have received a copy of the GNU Affero General Public License
+    ~ along with Deepchecks.  If not, see <http://www.gnu.org/licenses/>.
+    ~ ----------------------------------------------------------------------------
+    ~
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Data Integrity Suite</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #212529;
+            text-align: left;
+            max-width: 1200px;
+            margin: auto;
+            background-color: white;
+        }
+
+        div.nbinput.container div.prompt *,
+        div.nboutput.container div.prompt *,
+        div.nbinput.container div.input_area pre,
+        div.nboutput.container div.output_area pre,
+        div.nbinput.container div.input_area .highlight,
+        div.nboutput.container div.output_area .highlight {
+            border: none;
+            padding: 0;
+            margin: 0;
+            box-shadow: none;
+        }
+
+        div.nbinput.container > div[class*=highlight],
+        div.nboutput.container > div[class*=highlight] {
+            margin: 0;
+        }
+
+        div.nbinput.container div.prompt *,
+        div.nboutput.container div.prompt * {
+            background: none;
+        }
+
+        div.nboutput.container div.output_area .highlight,
+        div.nboutput.container div.output_area pre {
+            background: unset;
+        }
+
+        div.nboutput.container div.output_area div.highlight {
+            color: unset;  /* override Pygments text color */
+        }
+
+        /* avoid gaps between output lines */
+        div.nboutput.container div[class*=highlight] pre {
+            line-height: normal;
+        }
+
+        /* input/output containers */
+        div.nbinput.container,
+        div.nboutput.container {
+            display: -webkit-flex;
+            display: flex;
+            align-items: flex-start;
+            margin: 0;
+            width: 100%;
+        }
+        @media (max-width: 540px) {
+            div.nbinput.container,
+            div.nboutput.container {
+                flex-direction: column;
+            }
+        }
+
+        /* input container */
+        div.nbinput.container {
+            padding-top: 5px;
+        }
+
+        /* last container */
+        div.nblast.container {
+            padding-bottom: 5px;
+        }
+
+        /* input prompt */
+        div.nbinput.container div.prompt pre {
+            color: #307FC1;
+        }
+
+        /* output prompt */
+        div.nboutput.container div.prompt pre {
+            color: #BF5B3D;
+        }
+
+        /* all prompts */
+        div.nbinput.container div.prompt,
+        div.nboutput.container div.prompt {
+            width: 4.5ex;
+            padding-top: 5px;
+            position: relative;
+            user-select: none;
+        }
+
+        div.nbinput.container div.prompt > div,
+        div.nboutput.container div.prompt > div {
+            position: absolute;
+            right: 0;
+            margin-right: 0.3ex;
+        }
+
+        @media (max-width: 540px) {
+            div.nbinput.container div.prompt,
+            div.nboutput.container div.prompt {
+                width: unset;
+                text-align: left;
+                padding: 0.4em;
+            }
+            div.nboutput.container div.prompt.empty {
+                padding: 0;
+            }
+
+            div.nbinput.container div.prompt > div,
+            div.nboutput.container div.prompt > div {
+                position: unset;
+            }
+        }
+
+        /* disable scrollbars on prompts */
+        div.nbinput.container div.prompt pre,
+        div.nboutput.container div.prompt pre {
+            overflow: hidden;
+        }
+
+        /* input/output area */
+        div.nbinput.container div.input_area,
+        div.nboutput.container div.output_area {
+            -webkit-flex: 1;
+            flex: 1;
+            overflow: auto;
+        }
+        @media (max-width: 540px) {
+            div.nbinput.container div.input_area,
+            div.nboutput.container div.output_area {
+                width: 100%;
+            }
+        }
+
+        /* input area */
+        div.nbinput.container div.input_area {
+            border: 1px solid #e0e0e0;
+            border-radius: 2px;
+            /*background: #f5f5f5;*/
+        }
+
+        /* override MathJax center alignment in output cells */
+        div.nboutput.container div[class*=MathJax] {
+            text-align: left !important;
+        }
+
+        /* override sphinx.ext.imgmath center alignment in output cells */
+        div.nboutput.container div.math p {
+            text-align: left;
+        }
+
+        /* standard error */
+        div.nboutput.container div.output_area.stderr {
+            background: #fdd;
+        }
+
+        /* ANSI colors */
+        .ansi-black-fg { color: #3E424D; }
+        .ansi-black-bg { background-color: #3E424D; }
+        .ansi-black-intense-fg { color: #282C36; }
+        .ansi-black-intense-bg { background-color: #282C36; }
+        .ansi-red-fg { color: #E75C58; }
+        .ansi-red-bg { background-color: #E75C58; }
+        .ansi-red-intense-fg { color: #B22B31; }
+        .ansi-red-intense-bg { background-color: #B22B31; }
+        .ansi-green-fg { color: #00A250; }
+        .ansi-green-bg { background-color: #00A250; }
+        .ansi-green-intense-fg { color: #007427; }
+        .ansi-green-intense-bg { background-color: #007427; }
+        .ansi-yellow-fg { color: #DDB62B; }
+        .ansi-yellow-bg { background-color: #DDB62B; }
+        .ansi-yellow-intense-fg { color: #B27D12; }
+        .ansi-yellow-intense-bg { background-color: #B27D12; }
+        .ansi-blue-fg { color: #208FFB; }
+        .ansi-blue-bg { background-color: #208FFB; }
+        .ansi-blue-intense-fg { color: #0065CA; }
+        .ansi-blue-intense-bg { background-color: #0065CA; }
+        .ansi-magenta-fg { color: #D160C4; }
+        .ansi-magenta-bg { background-color: #D160C4; }
+        .ansi-magenta-intense-fg { color: #A03196; }
+        .ansi-magenta-intense-bg { background-color: #A03196; }
+        .ansi-cyan-fg { color: #60C6C8; }
+        .ansi-cyan-bg { background-color: #60C6C8; }
+        .ansi-cyan-intense-fg { color: #258F8F; }
+        .ansi-cyan-intense-bg { background-color: #258F8F; }
+        .ansi-white-fg { color: #C5C1B4; }
+        .ansi-white-bg { background-color: #C5C1B4; }
+        .ansi-white-intense-fg { color: #A1A6B2; }
+        .ansi-white-intense-bg { background-color: #A1A6B2; }
+
+        .ansi-default-inverse-fg { color: #FFFFFF; }
+        .ansi-default-inverse-bg { background-color: #000000; }
+
+        .ansi-bold { font-weight: bold; }
+        .ansi-underline { text-decoration: underline; }
+
+
+        div.nbinput.container div.input_area div[class*=highlight] > pre,
+        div.nboutput.container div.output_area div[class*=highlight] > pre,
+        div.nboutput.container div.output_area div[class*=highlight].math,
+        div.nboutput.container div.output_area.rendered_html,
+        div.nboutput.container div.output_area > div.output_javascript,
+        div.nboutput.container div.output_area:not(.rendered_html) > img{
+            padding: 5px;
+            margin: 0;
+        }
+
+        /* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+        div.nbinput.container div.input_area > div[class^='highlight'],
+        div.nboutput.container div.output_area > div[class^='highlight']{
+            overflow-y: hidden;
+        }
+
+        /* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+        .prompt .copybtn {
+            display: none;
+        }
+
+        /* Some additional styling taken form the Jupyter notebook CSS */
+        div.rendered_html table {
+        border: none;
+        border-collapse: collapse;
+        border-spacing: 0;
+        color: black;
+        font-size: 12px;
+        table-layout: fixed;
+        }
+        div.rendered_html thead {
+        border-bottom: 1px solid black;
+        vertical-align: bottom;
+        }
+        div.rendered_html tr,
+        div.rendered_html th,
+        div.rendered_html td {
+        text-align: right;
+        vertical-align: middle;
+        padding: 0.5em 0.5em;
+        line-height: normal;
+        white-space: normal;
+        max-width: none;
+        border: none;
+        }
+        div.rendered_html th {
+        font-weight: bold;
+        }
+        div.rendered_html tbody tr:nth-child(odd) {
+        background: #f5f5f5;
+        }
+        div.rendered_html tbody tr:hover {
+        background: rgba(66, 165, 245, 0.2);
+        }
+    </style>
+    <script>
+        (!window.navigator.onLine ? alert('needs internet connection') : '');
+    </script>
+</head>
+<body>
+    
+
+<!-- Load require.js. Delete this if your page already loads require.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.1/dist/embed-amd.js" crossorigin="anonymous"></script>
+
+<script type="application/vnd.jupyter.widget-state+json">
+{
+  "version_major": 2,
+  "version_minor": 0,
+  "state": {
+    "f4963c90a0de4bd09f0ec593949be7fc": {
+      "model_name": "AccordionModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "_titles": {
+          "0": "Data Integrity Suite"
+        },
+        "children": [
+          "IPY_MODEL_cd718ea8c4854b78a77aa4993d035146"
+        ],
+        "layout": "IPY_MODEL_7f90baac4e0e40c9be5d1e4aeca65379"
+      }
+    },
+    "cd718ea8c4854b78a77aa4993d035146": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "children": [
+          "IPY_MODEL_2f5d67b952db4198a7bb7027fb217329",
+          "IPY_MODEL_886a541b50a341128fac3e5d5e30afc1",
+          "IPY_MODEL_d83aa9dc37114173be16711e1cea841a",
+          "IPY_MODEL_26067e1f7c534c34a9c701fe942bbbf6",
+          "IPY_MODEL_82bfb077587149e2a8ddc4e1da418ff6"
+        ],
+        "layout": "IPY_MODEL_e43d7deaaf964549b83c484d67a8d302"
+      }
+    },
+    "2f5d67b952db4198a7bb7027fb217329": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_bc4a7b5d926d4df3a01612eff35e5f6b",
+        "style": "IPY_MODEL_de99df8211624ee9aafd307d95a5694d",
+        "value": "\n            <h1 id=\"summary_YYTQ3Q0S7IC0D5KQH7F7RB8XM\">Data Integrity Suite</h1>\n            <p>\n                The suite is composed of various checks such as: Is Single Value, Mixed Nulls, Outlier Sample Detection, etc...<br>\n                Each check may contain conditions (which will result in pass / fail / warning / error\n                , represented by \n<span style=\"color: green;display:inline-block\">\u2713</span> /\n<span style=\"color: red;display:inline-block\">\u2716</span> /\n<span style=\"color: orange;font-weight:bold;display:inline-block\">!</span> /\n<span style=\"color: firebrick;font-weight:bold;display:inline-block\">\u2048</span>\n) as well as other outputs such as plots or tables.<br>\n                Suites, checks and conditions can all be modified. Read more about\n                <a href=https://docs.deepchecks.com/en/stable/examples/guides/create_a_custom_suite.html?utm_source=display_output&utm_medium=referral&utm_campaign=suite_link target=\"_blank\">custom suites</a>.\n            </p>\n\n"
+      }
+    },
+    "bc4a7b5d926d4df3a01612eff35e5f6b": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "de99df8211624ee9aafd307d95a5694d": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "886a541b50a341128fac3e5d5e30afc1": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "children": [
+          "IPY_MODEL_f44e067d018448c19f16dad96d579246",
+          "IPY_MODEL_415ed94cbb2a49eda0f2b7eae5edcb83"
+        ],
+        "layout": "IPY_MODEL_ff68ba31cf3348b6b355f620ebcc45f4"
+      }
+    },
+    "f44e067d018448c19f16dad96d579246": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_cf89c7288efa4dd1bb010caaba6cd1fc",
+        "style": "IPY_MODEL_3f6187d384f649c1aff79865df643aa1",
+        "value": "<span id=\"summary_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-ZZ14T\"></span>"
+      }
+    },
+    "cf89c7288efa4dd1bb010caaba6cd1fc": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "3f6187d384f649c1aff79865df643aa1": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "415ed94cbb2a49eda0f2b7eae5edcb83": {
+      "model_name": "AccordionModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [
+          "rendered_html",
+          "jp-RenderedHTMLCommon",
+          "jp-RenderedHTML",
+          "jp-OutputArea-output"
+        ],
+        "_titles": {
+          "0": "Didn't Pass"
+        },
+        "children": [
+          "IPY_MODEL_445fa1f215de4852b1d8717e3a8ea3e9"
+        ],
+        "layout": "IPY_MODEL_cde6a820376a4573a3753b18ba7b13af",
+        "selected_index": null
+      }
+    },
+    "445fa1f215de4852b1d8717e3a8ea3e9": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "children": [
+          "IPY_MODEL_c83f857338464f75a2bd59ead6cf8235",
+          "IPY_MODEL_770f1802189745f08a0bf9a263fe652c",
+          "IPY_MODEL_7458ab91d4ad4bafb2ada30ec3ed1d80",
+          "IPY_MODEL_d94f49a99b6747c4b96037a02bea31e4",
+          "IPY_MODEL_e0e5454c7c064fb5898868c3f942c3ed",
+          "IPY_MODEL_d94f49a99b6747c4b96037a02bea31e4",
+          "IPY_MODEL_7b34b3592bb243919ffa6b513f1156bb",
+          "IPY_MODEL_d94f49a99b6747c4b96037a02bea31e4",
+          "IPY_MODEL_a0b1a554fe2e4d56b0162b0274706b82"
+        ],
+        "layout": "IPY_MODEL_e33f80f2af2b4e00ba3ef938f2e7ca7f"
+      }
+    },
+    "c83f857338464f75a2bd59ead6cf8235": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_1ea7da3747c74375bbf367078af89a90",
+        "style": "IPY_MODEL_de2c26e16e8443ea8818a781f30676b9",
+        "value": "<style type=\"text/css\">\n#T_c278f table {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_c278f thead {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_c278f tbody {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_c278f th {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_c278f td {\n  text-align: left;\n  white-space: pre-wrap;\n}\n</style>\n<table id=\"T_c278f\">\n  <thead>\n    <tr>\n      <th id=\"T_c278f_level0_col0\" class=\"col_heading level0 col0\" >Status</th>\n      <th id=\"T_c278f_level0_col1\" class=\"col_heading level0 col1\" >Check</th>\n      <th id=\"T_c278f_level0_col2\" class=\"col_heading level0 col2\" >Condition</th>\n      <th id=\"T_c278f_level0_col3\" class=\"col_heading level0 col3\" >More Info</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td id=\"T_c278f_row0_col0\" class=\"data row0 col0\" ><div style=\"color: orange;text-align: center;font-weight:bold\">!</div></td>\n      <td id=\"T_c278f_row0_col1\" class=\"data row0 col1\" ><a href=\"#MixedDataTypes_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-ZZ14T\">Mixed Data Types</a></td>\n      <td id=\"T_c278f_row0_col2\" class=\"data row0 col2\" >Rare data types in column are either more than 10% or less than 1% of the data</td>\n      <td id=\"T_c278f_row0_col3\" class=\"data row0 col3\" >Found 1 out of 9 columns with non-negligible quantities of samples with a different data type from the majority of samples: ['total_sqft']</td>\n    </tr>\n    <tr>\n      <td id=\"T_c278f_row1_col0\" class=\"data row1 col0\" ><div style=\"color: orange;text-align: center;font-weight:bold\">!</div></td>\n      <td id=\"T_c278f_row1_col1\" class=\"data row1 col1\" ><a href=\"#StringMismatch_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-ZZ14T\">String Mismatch</a></td>\n      <td id=\"T_c278f_row1_col2\" class=\"data row1 col2\" >No string variants</td>\n      <td id=\"T_c278f_row1_col3\" class=\"data row1 col3\" >Found 2 out of 6 columns with amount of variants above threshold: {'location': ['whitefield', 'bhoganhalli', 'thanisandra', 'sarjapurroad', 'banaswadi'], 'society': ['sravehi', 'saacesa', 'arntsa']}</td>\n    </tr>\n    <tr>\n      <td id=\"T_c278f_row2_col0\" class=\"data row2 col0\" ><div style=\"color: orange;text-align: center;font-weight:bold\">!</div></td>\n      <td id=\"T_c278f_row2_col1\" class=\"data row2 col1\" ><a href=\"#DataDuplicates_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-ZZ14T\">Data Duplicates</a></td>\n      <td id=\"T_c278f_row2_col2\" class=\"data row2 col2\" >Duplicate data ratio is less or equal to 0%</td>\n      <td id=\"T_c278f_row2_col3\" class=\"data row2 col3\" >Found 3.97% duplicate data</td>\n    </tr>\n    <tr>\n      <td id=\"T_c278f_row3_col0\" class=\"data row3 col0\" ><div style=\"color: orange;text-align: center;font-weight:bold\">!</div></td>\n      <td id=\"T_c278f_row3_col1\" class=\"data row3 col1\" ><a href=\"#StringLengthOutOfBounds_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-ZZ14T\">String Length Out Of Bounds</a></td>\n      <td id=\"T_c278f_row3_col2\" class=\"data row3 col2\" >Ratio of string length outliers is less or equal to 0%</td>\n      <td id=\"T_c278f_row3_col3\" class=\"data row3 col3\" >Found 1 out of 1 relevant columns with outliers ratio above threshold: {'total_sqft': '1.31%'}</td>\n    </tr>\n  </tbody>\n</table>\n"
+      }
+    },
+    "1ea7da3747c74375bbf367078af89a90": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "de2c26e16e8443ea8818a781f30676b9": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "770f1802189745f08a0bf9a263fe652c": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_28434234374e4f4789d5e1b412f01981",
+        "style": "IPY_MODEL_3a1bd8edda8f4422b6925e6decaf2a1e",
+        "value": "<hr style=\"background-color: #eee;border: 0 none;color: #eee;height: 4px;\">"
+      }
+    },
+    "28434234374e4f4789d5e1b412f01981": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "3a1bd8edda8f4422b6925e6decaf2a1e": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "7458ab91d4ad4bafb2ada30ec3ed1d80": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [
+          "rendered_html",
+          "jp-RenderedHTMLCommon",
+          "jp-RenderedHTML",
+          "jp-OutputArea-output"
+        ],
+        "children": [
+          "IPY_MODEL_53a8f4a41390496a90591360960b6b75",
+          "IPY_MODEL_849d7a08014343cabddd04b3f510b29f",
+          "IPY_MODEL_ff755876053d4db38a17ac6f9db113ad",
+          "IPY_MODEL_cb7941a997a842578b925fb05606ff88"
+        ],
+        "layout": "IPY_MODEL_7b59de4e06f44d7abb6a65e1e697a24a"
+      }
+    },
+    "53a8f4a41390496a90591360960b6b75": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_cfa65097688741f5a0922441eb57f5da",
+        "style": "IPY_MODEL_75b9f22d7cd341478e7b3cd79d133e59",
+        "value": "<h4 id=\"MixedDataTypes_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-ZZ14T\"><b>Mixed Data Types</b></h4>"
+      }
+    },
+    "cfa65097688741f5a0922441eb57f5da": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "75b9f22d7cd341478e7b3cd79d133e59": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "849d7a08014343cabddd04b3f510b29f": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_f26d1bfdd6d4478d9a1483438d3407b6",
+        "style": "IPY_MODEL_b06b590a2add46e88540688a37c8e4ee",
+        "value": "<p>Detect columns which contain a mix of numerical and string values.</p>"
+      }
+    },
+    "f26d1bfdd6d4478d9a1483438d3407b6": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "b06b590a2add46e88540688a37c8e4ee": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "ff755876053d4db38a17ac6f9db113ad": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_57a11cdfc2c2414cb2d1e9e07428c76e",
+        "style": "IPY_MODEL_c681f0ce82d74eb6aff87fb7d5498ba5",
+        "value": "<h5><b>Conditions Summary</b></h5><style type=\"text/css\">\n#T_5ab10 table {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_5ab10 thead {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_5ab10 tbody {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_5ab10 th {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_5ab10 td {\n  text-align: left;\n  white-space: pre-wrap;\n}\n</style>\n<table id=\"T_5ab10\">\n  <thead>\n    <tr>\n      <th id=\"T_5ab10_level0_col0\" class=\"col_heading level0 col0\" >Status</th>\n      <th id=\"T_5ab10_level0_col1\" class=\"col_heading level0 col1\" >Condition</th>\n      <th id=\"T_5ab10_level0_col2\" class=\"col_heading level0 col2\" >More Info</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td id=\"T_5ab10_row0_col0\" class=\"data row0 col0\" ><div style=\"color: orange;text-align: center;font-weight:bold\">!</div></td>\n      <td id=\"T_5ab10_row0_col1\" class=\"data row0 col1\" >Rare data types in column are either more than 10% or less than 1% of the data</td>\n      <td id=\"T_5ab10_row0_col2\" class=\"data row0 col2\" >Found 1 out of 9 columns with non-negligible quantities of samples with a different data type from the majority of samples: ['total_sqft']</td>\n    </tr>\n  </tbody>\n</table>\n"
+      }
+    },
+    "57a11cdfc2c2414cb2d1e9e07428c76e": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "c681f0ce82d74eb6aff87fb7d5498ba5": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "cb7941a997a842578b925fb05606ff88": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "children": [
+          "IPY_MODEL_ef8d2cca68a94162a26e14f560e36bae",
+          "IPY_MODEL_c812dc489e1d404eaae63b9ffbdba168",
+          "IPY_MODEL_1170a725cb17473d97a2895a33afe4ce",
+          "IPY_MODEL_ccb086968fa64612abd316a07ce36124"
+        ],
+        "layout": "IPY_MODEL_f51700ef078044e2b57f41c2cf05d6d6"
+      }
+    },
+    "ef8d2cca68a94162a26e14f560e36bae": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_22eeeae0146045fa850266390b3e6162",
+        "style": "IPY_MODEL_50078b7a04444f68a79a6bc52afbaccf",
+        "value": "<h5><b>Additional Outputs</b></h5>"
+      }
+    },
+    "22eeeae0146045fa850266390b3e6162": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "50078b7a04444f68a79a6bc52afbaccf": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "c812dc489e1d404eaae63b9ffbdba168": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_fca83daabd944e1a8df50eb645c2be12",
+        "style": "IPY_MODEL_901ebbb496654136b14eff4b27462c57",
+        "value": "<div>* showing only the top 10 columns, you can change it using n_top_columns param</div>"
+      }
+    },
+    "fca83daabd944e1a8df50eb645c2be12": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "901ebbb496654136b14eff4b27462c57": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "1170a725cb17473d97a2895a33afe4ce": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_de78a073f463487bb457ca5dfd9e9a00",
+        "style": "IPY_MODEL_ad8a017aee624d568fbaf56050fe4434",
+        "value": "<style type=\"text/css\">\n#T_6d3ed table {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_6d3ed thead {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_6d3ed tbody {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_6d3ed th {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_6d3ed td {\n  text-align: left;\n  white-space: pre-wrap;\n}\n</style>\n<table id=\"T_6d3ed\">\n  <thead>\n    <tr>\n      <th class=\"blank level0\" >&nbsp;</th>\n      <th id=\"T_6d3ed_level0_col0\" class=\"col_heading level0 col0\" >total_sqft</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th id=\"T_6d3ed_level0_row0\" class=\"row_heading level0 row0\" >Numbers</th>\n      <td id=\"T_6d3ed_row0_col0\" class=\"data row0 col0\" >98.15%</td>\n    </tr>\n    <tr>\n      <th id=\"T_6d3ed_level0_row1\" class=\"row_heading level0 row1\" >Numbers examples</th>\n      <td id=\"T_6d3ed_row1_col0\" class=\"data row1 col0\" >[1,056, 2,600, 1,440]</td>\n    </tr>\n    <tr>\n      <th id=\"T_6d3ed_level0_row2\" class=\"row_heading level0 row2\" >Strings</th>\n      <td id=\"T_6d3ed_row2_col0\" class=\"data row2 col0\" >1.85%</td>\n    </tr>\n    <tr>\n      <th id=\"T_6d3ed_level0_row3\" class=\"row_heading level0 row3\" >Strings examples</th>\n      <td id=\"T_6d3ed_row3_col0\" class=\"data row3 col0\" >['2957 - 3450', '2100 - 2850', '3010 - 3410']</td>\n    </tr>\n  </tbody>\n</table>\n"
+      }
+    },
+    "de78a073f463487bb457ca5dfd9e9a00": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "ad8a017aee624d568fbaf56050fe4434": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "ccb086968fa64612abd316a07ce36124": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_cf088d6f3c5a4f9281a68b86eb3cffdf",
+        "style": "IPY_MODEL_fbcc105cf48140ec982334227cd2fb6a",
+        "value": "<br><a href=\"#summary_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-ZZ14T\" style=\"font-size: 14px;\">Go to top</a>"
+      }
+    },
+    "cf088d6f3c5a4f9281a68b86eb3cffdf": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "fbcc105cf48140ec982334227cd2fb6a": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "f51700ef078044e2b57f41c2cf05d6d6": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "7b59de4e06f44d7abb6a65e1e697a24a": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "d94f49a99b6747c4b96037a02bea31e4": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_661686409ac34713b02a155e2795b129",
+        "style": "IPY_MODEL_f9fe5a8ef92449a3b148613546db7b54",
+        "value": "<hr style=\"background-color: #eee;border: 0 none;color: #eee;height: 4px;\">"
+      }
+    },
+    "661686409ac34713b02a155e2795b129": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "f9fe5a8ef92449a3b148613546db7b54": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "e0e5454c7c064fb5898868c3f942c3ed": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [
+          "rendered_html",
+          "jp-RenderedHTMLCommon",
+          "jp-RenderedHTML",
+          "jp-OutputArea-output"
+        ],
+        "children": [
+          "IPY_MODEL_7a4aabc836f042b1881e92425277bb3c",
+          "IPY_MODEL_27d74498cdad436da82a04ad39e0a282",
+          "IPY_MODEL_9dac645c53de436fbc1e1ef52261dd76",
+          "IPY_MODEL_90e78585ca514d98b071c640a2c2d142"
+        ],
+        "layout": "IPY_MODEL_bc8eff3e7eb14636984861e366bdfc73"
+      }
+    },
+    "7a4aabc836f042b1881e92425277bb3c": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_ec596b2cd50f41a9baaf6e0eb831f62f",
+        "style": "IPY_MODEL_bfcd5524720444ed94a84aa077ad0042",
+        "value": "<h4 id=\"StringMismatch_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-ZZ14T\"><b>String Mismatch</b></h4>"
+      }
+    },
+    "ec596b2cd50f41a9baaf6e0eb831f62f": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "bfcd5524720444ed94a84aa077ad0042": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "27d74498cdad436da82a04ad39e0a282": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_3a38172b4d044e1ea1ab76cc705f9e88",
+        "style": "IPY_MODEL_31850078661948e59ca44ce007b616cd",
+        "value": "<p>Detect different variants of string categories (e.g. \"mislabeled\" vs \"mis-labeled\") in a categorical column.</p>"
+      }
+    },
+    "3a38172b4d044e1ea1ab76cc705f9e88": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "31850078661948e59ca44ce007b616cd": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "9dac645c53de436fbc1e1ef52261dd76": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_82cccd5419734492ac94a6a91e2611cd",
+        "style": "IPY_MODEL_e183c40a88fb4b4699dbcf7d6c007a6b",
+        "value": "<h5><b>Conditions Summary</b></h5><style type=\"text/css\">\n#T_8be65 table {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_8be65 thead {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_8be65 tbody {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_8be65 th {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_8be65 td {\n  text-align: left;\n  white-space: pre-wrap;\n}\n</style>\n<table id=\"T_8be65\">\n  <thead>\n    <tr>\n      <th id=\"T_8be65_level0_col0\" class=\"col_heading level0 col0\" >Status</th>\n      <th id=\"T_8be65_level0_col1\" class=\"col_heading level0 col1\" >Condition</th>\n      <th id=\"T_8be65_level0_col2\" class=\"col_heading level0 col2\" >More Info</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td id=\"T_8be65_row0_col0\" class=\"data row0 col0\" ><div style=\"color: orange;text-align: center;font-weight:bold\">!</div></td>\n      <td id=\"T_8be65_row0_col1\" class=\"data row0 col1\" >No string variants</td>\n      <td id=\"T_8be65_row0_col2\" class=\"data row0 col2\" >Found 2 out of 6 columns with amount of variants above threshold: {'location': ['whitefield', 'bhoganhalli', 'thanisandra', 'sarjapurroad', 'banaswadi'], 'society': ['sravehi', 'saacesa', 'arntsa']}</td>\n    </tr>\n  </tbody>\n</table>\n"
+      }
+    },
+    "82cccd5419734492ac94a6a91e2611cd": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "e183c40a88fb4b4699dbcf7d6c007a6b": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "90e78585ca514d98b071c640a2c2d142": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "children": [
+          "IPY_MODEL_73e84d9cd4ab475bace1a67b832231a1",
+          "IPY_MODEL_c3ae6314330a4c048081d99e81291e85",
+          "IPY_MODEL_518f1d1091ce4ab0a1a2d3ef308a7d13",
+          "IPY_MODEL_51d1bae7a4604d21b01196b0d0010ab3"
+        ],
+        "layout": "IPY_MODEL_42fba696f46d4fc78dca4387c31b6bb8"
+      }
+    },
+    "73e84d9cd4ab475bace1a67b832231a1": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_761d5c62172e45099f538a50a4c7cfda",
+        "style": "IPY_MODEL_af37fe6258ba4694af9746a435ac13ee",
+        "value": "<h5><b>Additional Outputs</b></h5>"
+      }
+    },
+    "761d5c62172e45099f538a50a4c7cfda": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "af37fe6258ba4694af9746a435ac13ee": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "c3ae6314330a4c048081d99e81291e85": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_26fd4e9bbfac4c86bd9668955b8d3274",
+        "style": "IPY_MODEL_fa7f3f85e5ea409599f681193cbfed14",
+        "value": "<div>* showing only the top 10 columns, you can change it using n_top_columns param</div>"
+      }
+    },
+    "26fd4e9bbfac4c86bd9668955b8d3274": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "fa7f3f85e5ea409599f681193cbfed14": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "518f1d1091ce4ab0a1a2d3ef308a7d13": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_8b9d74378e1a454c8a06c925f7f30822",
+        "style": "IPY_MODEL_e777500676d44c08bb766dca865a8e4d",
+        "value": "<style type=\"text/css\">\n#T_6989f table {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_6989f thead {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_6989f tbody {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_6989f th {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_6989f td {\n  text-align: left;\n  white-space: pre-wrap;\n}\n</style>\n<table id=\"T_6989f\">\n  <thead>\n    <tr>\n      <th class=\"blank\" >&nbsp;</th>\n      <th class=\"blank level0\" >&nbsp;</th>\n      <th id=\"T_6989f_level0_col0\" class=\"col_heading level0 col0\" >Value</th>\n      <th id=\"T_6989f_level0_col1\" class=\"col_heading level0 col1\" >Count</th>\n      <th id=\"T_6989f_level0_col2\" class=\"col_heading level0 col2\" >% In data</th>\n    </tr>\n    <tr>\n      <th class=\"index_name level0\" >Column Name</th>\n      <th class=\"index_name level1\" >Base form</th>\n      <th class=\"blank col0\" >&nbsp;</th>\n      <th class=\"blank col1\" >&nbsp;</th>\n      <th class=\"blank col2\" >&nbsp;</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th id=\"T_6989f_level0_row0\" class=\"row_heading level0 row0\" rowspan=\"10\">location</th>\n      <th id=\"T_6989f_level1_row0\" class=\"row_heading level1 row0\" >whitefield</th>\n      <td id=\"T_6989f_row0_col0\" class=\"data row0 col0\" > Whitefield</td>\n      <td id=\"T_6989f_row0_col1\" class=\"data row0 col1\" >1</td>\n      <td id=\"T_6989f_row0_col2\" class=\"data row0 col2\" >0.0075%</td>\n    </tr>\n    <tr>\n      <th id=\"T_6989f_level1_row1\" class=\"row_heading level1 row1\" >tcpalya</th>\n      <td id=\"T_6989f_row1_col0\" class=\"data row1 col0\" >T.C. Palya</td>\n      <td id=\"T_6989f_row1_col1\" class=\"data row1 col1\" >1</td>\n      <td id=\"T_6989f_row1_col2\" class=\"data row1 col2\" >0.0075%</td>\n    </tr>\n    <tr>\n      <th id=\"T_6989f_level1_row2\" class=\"row_heading level1 row2\" >veersandra</th>\n      <td id=\"T_6989f_row2_col0\" class=\"data row2 col0\" >Veer Sandra</td>\n      <td id=\"T_6989f_row2_col1\" class=\"data row2 col1\" >2</td>\n      <td id=\"T_6989f_row2_col2\" class=\"data row2 col2\" >0.02%</td>\n    </tr>\n    <tr>\n      <th id=\"T_6989f_level1_row3\" class=\"row_heading level1 row3\" >veersandra</th>\n      <td id=\"T_6989f_row3_col0\" class=\"data row3 col0\" >Veersandra</td>\n      <td id=\"T_6989f_row3_col1\" class=\"data row3 col1\" >2</td>\n      <td id=\"T_6989f_row3_col2\" class=\"data row3 col2\" >0.02%</td>\n    </tr>\n    <tr>\n      <th id=\"T_6989f_level1_row4\" class=\"row_heading level1 row4\" >electroniccityphase1</th>\n      <td id=\"T_6989f_row4_col0\" class=\"data row4 col0\" >Electronic City Phase 1, </td>\n      <td id=\"T_6989f_row4_col1\" class=\"data row4 col1\" >1</td>\n      <td id=\"T_6989f_row4_col2\" class=\"data row4 col2\" >0.0075%</td>\n    </tr>\n    <tr>\n      <th id=\"T_6989f_level1_row5\" class=\"row_heading level1 row5\" >electroniccityphase1</th>\n      <td id=\"T_6989f_row5_col0\" class=\"data row5 col0\" >Electronic city Phase 1, </td>\n      <td id=\"T_6989f_row5_col1\" class=\"data row5 col1\" >2</td>\n      <td id=\"T_6989f_row5_col2\" class=\"data row5 col2\" >0.02%</td>\n    </tr>\n    <tr>\n      <th id=\"T_6989f_level1_row6\" class=\"row_heading level1 row6\" >electroniccityphase1</th>\n      <td id=\"T_6989f_row6_col0\" class=\"data row6 col0\" >Electronic city phase 1, </td>\n      <td id=\"T_6989f_row6_col1\" class=\"data row6 col1\" >1</td>\n      <td id=\"T_6989f_row6_col2\" class=\"data row6 col2\" >0.0075%</td>\n    </tr>\n    <tr>\n      <th id=\"T_6989f_level1_row7\" class=\"row_heading level1 row7\" >vinayakanagar</th>\n      <td id=\"T_6989f_row7_col0\" class=\"data row7 col0\" >vinayakanagar</td>\n      <td id=\"T_6989f_row7_col1\" class=\"data row7 col1\" >1</td>\n      <td id=\"T_6989f_row7_col2\" class=\"data row7 col2\" >0.0075%</td>\n    </tr>\n    <tr>\n      <th id=\"T_6989f_level1_row8\" class=\"row_heading level1 row8\" >vinayakanagar</th>\n      <td id=\"T_6989f_row8_col0\" class=\"data row8 col0\" >Vinayaka Nagar</td>\n      <td id=\"T_6989f_row8_col1\" class=\"data row8 col1\" >4</td>\n      <td id=\"T_6989f_row8_col2\" class=\"data row8 col2\" >0.03%</td>\n    </tr>\n    <tr>\n      <th id=\"T_6989f_level1_row9\" class=\"row_heading level1 row9\" >tcpalya</th>\n      <td id=\"T_6989f_row9_col0\" class=\"data row9 col0\" >T.C PALYA</td>\n      <td id=\"T_6989f_row9_col1\" class=\"data row9 col1\" >3</td>\n      <td id=\"T_6989f_row9_col2\" class=\"data row9 col2\" >0.02%</td>\n    </tr>\n  </tbody>\n</table>\n"
+      }
+    },
+    "8b9d74378e1a454c8a06c925f7f30822": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "e777500676d44c08bb766dca865a8e4d": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "51d1bae7a4604d21b01196b0d0010ab3": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_749955a8ebee4381908bb6d5cda74e39",
+        "style": "IPY_MODEL_ca68bf1fb51f49849a4e18412a964722",
+        "value": "<br><a href=\"#summary_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-ZZ14T\" style=\"font-size: 14px;\">Go to top</a>"
+      }
+    },
+    "749955a8ebee4381908bb6d5cda74e39": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "ca68bf1fb51f49849a4e18412a964722": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "42fba696f46d4fc78dca4387c31b6bb8": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "bc8eff3e7eb14636984861e366bdfc73": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "7b34b3592bb243919ffa6b513f1156bb": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [
+          "rendered_html",
+          "jp-RenderedHTMLCommon",
+          "jp-RenderedHTML",
+          "jp-OutputArea-output"
+        ],
+        "children": [
+          "IPY_MODEL_caea24d855384d6696386f02fcb8092a",
+          "IPY_MODEL_1fa286c25d8a4f84843fa82895526361",
+          "IPY_MODEL_a8adf23703ac4b63bdb8529d1180f4c4",
+          "IPY_MODEL_3d2f9e746cfc4dd9871665380ecd262a"
+        ],
+        "layout": "IPY_MODEL_fbe0b93b47a94050b94ff9eca66b66ef"
+      }
+    },
+    "caea24d855384d6696386f02fcb8092a": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_efac4385b529429eb76f787189eb226e",
+        "style": "IPY_MODEL_1062ad971d264ce4a2160b62f0ad2aca",
+        "value": "<h4 id=\"DataDuplicates_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-ZZ14T\"><b>Data Duplicates</b></h4>"
+      }
+    },
+    "efac4385b529429eb76f787189eb226e": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "1062ad971d264ce4a2160b62f0ad2aca": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "1fa286c25d8a4f84843fa82895526361": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_b585211a197a405d9ce3ecc229d81830",
+        "style": "IPY_MODEL_e369ee0bfab84a08a1001a60d069d4bd",
+        "value": "<p>Checks for duplicate samples in the dataset.</p>"
+      }
+    },
+    "b585211a197a405d9ce3ecc229d81830": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "e369ee0bfab84a08a1001a60d069d4bd": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "a8adf23703ac4b63bdb8529d1180f4c4": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_c1c8a58236de421bbbefffb794cf1225",
+        "style": "IPY_MODEL_252827dc9fc243a69778932b655479f8",
+        "value": "<h5><b>Conditions Summary</b></h5><style type=\"text/css\">\n#T_3d319 table {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_3d319 thead {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_3d319 tbody {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_3d319 th {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_3d319 td {\n  text-align: left;\n  white-space: pre-wrap;\n}\n</style>\n<table id=\"T_3d319\">\n  <thead>\n    <tr>\n      <th id=\"T_3d319_level0_col0\" class=\"col_heading level0 col0\" >Status</th>\n      <th id=\"T_3d319_level0_col1\" class=\"col_heading level0 col1\" >Condition</th>\n      <th id=\"T_3d319_level0_col2\" class=\"col_heading level0 col2\" >More Info</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td id=\"T_3d319_row0_col0\" class=\"data row0 col0\" ><div style=\"color: orange;text-align: center;font-weight:bold\">!</div></td>\n      <td id=\"T_3d319_row0_col1\" class=\"data row0 col1\" >Duplicate data ratio is less or equal to 0%</td>\n      <td id=\"T_3d319_row0_col2\" class=\"data row0 col2\" >Found 3.97% duplicate data</td>\n    </tr>\n  </tbody>\n</table>\n"
+      }
+    },
+    "c1c8a58236de421bbbefffb794cf1225": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "252827dc9fc243a69778932b655479f8": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "3d2f9e746cfc4dd9871665380ecd262a": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "children": [
+          "IPY_MODEL_95670c226224402480193172fcb7de95",
+          "IPY_MODEL_8aad754bf09d40f08340aa0344bac815",
+          "IPY_MODEL_c8c7aca5b00747daa66ac573a61a9bbf",
+          "IPY_MODEL_4133169305eb4683b2a93818e25866b5",
+          "IPY_MODEL_443a703bc7bf409fbf83710c6eb030a2"
+        ],
+        "layout": "IPY_MODEL_16c01ed768b24deaaa40b08a054b4a37"
+      }
+    },
+    "95670c226224402480193172fcb7de95": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_c6879d6ede6c44439d42c05e6a0602df",
+        "style": "IPY_MODEL_1933843927c845009eff4f8bacc1bede",
+        "value": "<h5><b>Additional Outputs</b></h5>"
+      }
+    },
+    "c6879d6ede6c44439d42c05e6a0602df": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "1933843927c845009eff4f8bacc1bede": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "8aad754bf09d40f08340aa0344bac815": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_de66cf7aba7e40cd9ce1a49f7b2b1716",
+        "style": "IPY_MODEL_a68a2ad85b5a4814aef75fd03bcb8872",
+        "value": "<div>3.97% of data samples are duplicates. </div>"
+      }
+    },
+    "de66cf7aba7e40cd9ce1a49f7b2b1716": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "a68a2ad85b5a4814aef75fd03bcb8872": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "c8c7aca5b00747daa66ac573a61a9bbf": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_b1b8cd3cd64742e09756ba2b839dc705",
+        "style": "IPY_MODEL_23944f7416eb49b9bede2313c7de7d08",
+        "value": "<div>Each row in the table shows an example of duplicate data and the number of times it appears.</div>"
+      }
+    },
+    "b1b8cd3cd64742e09756ba2b839dc705": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "23944f7416eb49b9bede2313c7de7d08": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "4133169305eb4683b2a93818e25866b5": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_784707efcde344c1b0627fb30f5c3349",
+        "style": "IPY_MODEL_3d9b65eacc8848a692bee2e521ad2c0f",
+        "value": "<style type=\"text/css\">\n#T_1ed14 table {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_1ed14 thead {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_1ed14 tbody {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_1ed14 th {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_1ed14 td {\n  text-align: left;\n  white-space: pre-wrap;\n}\n</style>\n<table id=\"T_1ed14\">\n  <thead>\n    <tr>\n      <th class=\"blank\" >&nbsp;</th>\n      <th class=\"blank level0\" >&nbsp;</th>\n      <th id=\"T_1ed14_level0_col0\" class=\"col_heading level0 col0\" >area_type</th>\n      <th id=\"T_1ed14_level0_col1\" class=\"col_heading level0 col1\" >availability</th>\n      <th id=\"T_1ed14_level0_col2\" class=\"col_heading level0 col2\" >location</th>\n      <th id=\"T_1ed14_level0_col3\" class=\"col_heading level0 col3\" >size</th>\n      <th id=\"T_1ed14_level0_col4\" class=\"col_heading level0 col4\" >society</th>\n      <th id=\"T_1ed14_level0_col5\" class=\"col_heading level0 col5\" >total_sqft</th>\n      <th id=\"T_1ed14_level0_col6\" class=\"col_heading level0 col6\" >bath</th>\n      <th id=\"T_1ed14_level0_col7\" class=\"col_heading level0 col7\" >balcony</th>\n      <th id=\"T_1ed14_level0_col8\" class=\"col_heading level0 col8\" >price</th>\n    </tr>\n    <tr>\n      <th class=\"index_name level0\" >Instances</th>\n      <th class=\"index_name level1\" >Number of Duplicates</th>\n      <th class=\"blank col0\" >&nbsp;</th>\n      <th class=\"blank col1\" >&nbsp;</th>\n      <th class=\"blank col2\" >&nbsp;</th>\n      <th class=\"blank col3\" >&nbsp;</th>\n      <th class=\"blank col4\" >&nbsp;</th>\n      <th class=\"blank col5\" >&nbsp;</th>\n      <th class=\"blank col6\" >&nbsp;</th>\n      <th class=\"blank col7\" >&nbsp;</th>\n      <th class=\"blank col8\" >&nbsp;</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th id=\"T_1ed14_level0_row0\" class=\"row_heading level0 row0\" >2832, 3055, 6074, 8131, 8700, 8989, 1012...</th>\n      <th id=\"T_1ed14_level1_row0\" class=\"row_heading level1 row0\" >10</th>\n      <td id=\"T_1ed14_row0_col0\" class=\"data row0 col0\" >Super built-up  Area</td>\n      <td id=\"T_1ed14_row0_col1\" class=\"data row0 col1\" >Ready To Move</td>\n      <td id=\"T_1ed14_row0_col2\" class=\"data row0 col2\" >Haralur Road</td>\n      <td id=\"T_1ed14_row0_col3\" class=\"data row0 col3\" >2 BHK</td>\n      <td id=\"T_1ed14_row0_col4\" class=\"data row0 col4\" >RInceeg</td>\n      <td id=\"T_1ed14_row0_col5\" class=\"data row0 col5\" >1243</td>\n      <td id=\"T_1ed14_row0_col6\" class=\"data row0 col6\" >2.00</td>\n      <td id=\"T_1ed14_row0_col7\" class=\"data row0 col7\" >2.00</td>\n      <td id=\"T_1ed14_row0_col8\" class=\"data row0 col8\" >46.00</td>\n    </tr>\n    <tr>\n      <th id=\"T_1ed14_level0_row1\" class=\"row_heading level0 row1\" ></th>\n      <th id=\"T_1ed14_level1_row1\" class=\"row_heading level1 row1\" >9</th>\n      <td id=\"T_1ed14_row1_col0\" class=\"data row1 col0\" >Plot  Area</td>\n      <td id=\"T_1ed14_row1_col1\" class=\"data row1 col1\" >Ready To Move</td>\n      <td id=\"T_1ed14_row1_col2\" class=\"data row1 col2\" >TC Palaya</td>\n      <td id=\"T_1ed14_row1_col3\" class=\"data row1 col3\" >3 Bedroom</td>\n      <td id=\"T_1ed14_row1_col4\" class=\"data row1 col4\" >nan</td>\n      <td id=\"T_1ed14_row1_col5\" class=\"data row1 col5\" >1200</td>\n      <td id=\"T_1ed14_row1_col6\" class=\"data row1 col6\" >2.00</td>\n      <td id=\"T_1ed14_row1_col7\" class=\"data row1 col7\" >0.00</td>\n      <td id=\"T_1ed14_row1_col8\" class=\"data row1 col8\" >66.00</td>\n    </tr>\n    <tr>\n      <th id=\"T_1ed14_level0_row2\" class=\"row_heading level0 row2\" >1052, 2275, 3292, 5614, 7401, 10183, 106...</th>\n      <th id=\"T_1ed14_level1_row2\" class=\"row_heading level1 row2\" >9</th>\n      <td id=\"T_1ed14_row2_col0\" class=\"data row2 col0\" >Super built-up  Area</td>\n      <td id=\"T_1ed14_row2_col1\" class=\"data row2 col1\" >Ready To Move</td>\n      <td id=\"T_1ed14_row2_col2\" class=\"data row2 col2\" >HSR Layout</td>\n      <td id=\"T_1ed14_row2_col3\" class=\"data row2 col3\" >2 BHK</td>\n      <td id=\"T_1ed14_row2_col4\" class=\"data row2 col4\" >NRosete</td>\n      <td id=\"T_1ed14_row2_col5\" class=\"data row2 col5\" >1140</td>\n      <td id=\"T_1ed14_row2_col6\" class=\"data row2 col6\" >2.00</td>\n      <td id=\"T_1ed14_row2_col7\" class=\"data row2 col7\" >2.00</td>\n      <td id=\"T_1ed14_row2_col8\" class=\"data row2 col8\" >46.00</td>\n    </tr>\n    <tr>\n      <th id=\"T_1ed14_level0_row3\" class=\"row_heading level0 row3\" rowspan=\"2\"></th>\n      <th id=\"T_1ed14_level1_row3\" class=\"row_heading level1 row3\" >7</th>\n      <td id=\"T_1ed14_row3_col0\" class=\"data row3 col0\" >Plot  Area</td>\n      <td id=\"T_1ed14_row3_col1\" class=\"data row3 col1\" >19-Jan</td>\n      <td id=\"T_1ed14_row3_col2\" class=\"data row3 col2\" >Anekal</td>\n      <td id=\"T_1ed14_row3_col3\" class=\"data row3 col3\" >2 Bedroom</td>\n      <td id=\"T_1ed14_row3_col4\" class=\"data row3 col4\" >nan</td>\n      <td id=\"T_1ed14_row3_col5\" class=\"data row3 col5\" >1200</td>\n      <td id=\"T_1ed14_row3_col6\" class=\"data row3 col6\" >1.00</td>\n      <td id=\"T_1ed14_row3_col7\" class=\"data row3 col7\" >1.00</td>\n      <td id=\"T_1ed14_row3_col8\" class=\"data row3 col8\" >36.00</td>\n    </tr>\n    <tr>\n      <th id=\"T_1ed14_level1_row4\" class=\"row_heading level1 row4\" >7</th>\n      <td id=\"T_1ed14_row4_col0\" class=\"data row4 col0\" >Super built-up  Area</td>\n      <td id=\"T_1ed14_row4_col1\" class=\"data row4 col1\" >Ready To Move</td>\n      <td id=\"T_1ed14_row4_col2\" class=\"data row4 col2\" >Haralur Road</td>\n      <td id=\"T_1ed14_row4_col3\" class=\"data row4 col3\" >2 BHK</td>\n      <td id=\"T_1ed14_row4_col4\" class=\"data row4 col4\" >nan</td>\n      <td id=\"T_1ed14_row4_col5\" class=\"data row4 col5\" >1194</td>\n      <td id=\"T_1ed14_row4_col6\" class=\"data row4 col6\" >2.00</td>\n      <td id=\"T_1ed14_row4_col7\" class=\"data row4 col7\" >2.00</td>\n      <td id=\"T_1ed14_row4_col8\" class=\"data row4 col8\" >47.00</td>\n    </tr>\n  </tbody>\n</table>\n"
+      }
+    },
+    "784707efcde344c1b0627fb30f5c3349": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "3d9b65eacc8848a692bee2e521ad2c0f": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "443a703bc7bf409fbf83710c6eb030a2": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_bb8bbfa04a37450cbc4e226e2b4c05ab",
+        "style": "IPY_MODEL_d2658feb52ba402ea1f40b72e4ef7856",
+        "value": "<br><a href=\"#summary_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-ZZ14T\" style=\"font-size: 14px;\">Go to top</a>"
+      }
+    },
+    "bb8bbfa04a37450cbc4e226e2b4c05ab": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "d2658feb52ba402ea1f40b72e4ef7856": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "16c01ed768b24deaaa40b08a054b4a37": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "fbe0b93b47a94050b94ff9eca66b66ef": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "a0b1a554fe2e4d56b0162b0274706b82": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [
+          "rendered_html",
+          "jp-RenderedHTMLCommon",
+          "jp-RenderedHTML",
+          "jp-OutputArea-output"
+        ],
+        "children": [
+          "IPY_MODEL_52fde2e3fa5d446c8f981147688e6f5e",
+          "IPY_MODEL_f5f0a64a752047d3835898b7d1f367e1",
+          "IPY_MODEL_d4c2d03fabc5442e829aabbc1becbfb4",
+          "IPY_MODEL_23123192de5f41309430564ed67120a3"
+        ],
+        "layout": "IPY_MODEL_ecf84e324baa4f8283cad0dddd622842"
+      }
+    },
+    "52fde2e3fa5d446c8f981147688e6f5e": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_8e03eaca4c6b41ccb6c8280a0a83d6e8",
+        "style": "IPY_MODEL_efcf760f657344178a30d446183695df",
+        "value": "<h4 id=\"StringLengthOutOfBounds_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-ZZ14T\"><b>String Length Out Of Bounds</b></h4>"
+      }
+    },
+    "8e03eaca4c6b41ccb6c8280a0a83d6e8": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "efcf760f657344178a30d446183695df": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "f5f0a64a752047d3835898b7d1f367e1": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_f9ee6c02aa7d46c88bf4973666880aee",
+        "style": "IPY_MODEL_f48e26bdfa97499ab6654b23242b45ec",
+        "value": "<p>Detect strings with length that is much longer/shorter than the identified \"normal\" string lengths.</p>"
+      }
+    },
+    "f9ee6c02aa7d46c88bf4973666880aee": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "f48e26bdfa97499ab6654b23242b45ec": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "d4c2d03fabc5442e829aabbc1becbfb4": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_6710addff7d84c1596afb97446261335",
+        "style": "IPY_MODEL_f703f75e8cd648a1b227d572381d7673",
+        "value": "<h5><b>Conditions Summary</b></h5><style type=\"text/css\">\n#T_449b5 table {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_449b5 thead {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_449b5 tbody {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_449b5 th {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_449b5 td {\n  text-align: left;\n  white-space: pre-wrap;\n}\n</style>\n<table id=\"T_449b5\">\n  <thead>\n    <tr>\n      <th id=\"T_449b5_level0_col0\" class=\"col_heading level0 col0\" >Status</th>\n      <th id=\"T_449b5_level0_col1\" class=\"col_heading level0 col1\" >Condition</th>\n      <th id=\"T_449b5_level0_col2\" class=\"col_heading level0 col2\" >More Info</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td id=\"T_449b5_row0_col0\" class=\"data row0 col0\" ><div style=\"color: orange;text-align: center;font-weight:bold\">!</div></td>\n      <td id=\"T_449b5_row0_col1\" class=\"data row0 col1\" >Ratio of string length outliers is less or equal to 0%</td>\n      <td id=\"T_449b5_row0_col2\" class=\"data row0 col2\" >Found 1 out of 1 relevant columns with outliers ratio above threshold: {'total_sqft': '1.31%'}</td>\n    </tr>\n  </tbody>\n</table>\n"
+      }
+    },
+    "6710addff7d84c1596afb97446261335": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "f703f75e8cd648a1b227d572381d7673": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "23123192de5f41309430564ed67120a3": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "children": [
+          "IPY_MODEL_1215a3db4eb64c918968220ed91d19b0",
+          "IPY_MODEL_14bc2ff6d05c44be80c494fb9f0dad8d",
+          "IPY_MODEL_3c2448f9dc914d968a0e09061da150cb",
+          "IPY_MODEL_1b9fab4ba47841249c2ef796ce20b7d1"
+        ],
+        "layout": "IPY_MODEL_7833044ea0f546aa9cfcd17168c3fc5f"
+      }
+    },
+    "1215a3db4eb64c918968220ed91d19b0": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_e5e2e2eafd36480da636cb8a820ce566",
+        "style": "IPY_MODEL_cb9ecd3d04404b0ab6cce3f882118711",
+        "value": "<h5><b>Additional Outputs</b></h5>"
+      }
+    },
+    "e5e2e2eafd36480da636cb8a820ce566": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "cb9ecd3d04404b0ab6cce3f882118711": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "14bc2ff6d05c44be80c494fb9f0dad8d": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_f12acd883b8f49dcb96b1bb353126545",
+        "style": "IPY_MODEL_8e35a9f083b942cdbf132d5eb88009e9",
+        "value": "<div>* showing only the top 10 columns, you can change it using n_top_columns param</div>"
+      }
+    },
+    "f12acd883b8f49dcb96b1bb353126545": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "8e35a9f083b942cdbf132d5eb88009e9": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "3c2448f9dc914d968a0e09061da150cb": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_5aa249dc62814c859e802b5684090765",
+        "style": "IPY_MODEL_bebc72cd79ed48fba65ab4333305415d",
+        "value": "<style type=\"text/css\">\n#T_f342a table {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_f342a thead {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_f342a tbody {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_f342a th {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_f342a td {\n  text-align: left;\n  white-space: pre-wrap;\n}\n</style>\n<table id=\"T_f342a\">\n  <thead>\n    <tr>\n      <th class=\"blank\" >&nbsp;</th>\n      <th class=\"blank\" >&nbsp;</th>\n      <th class=\"blank level0\" >&nbsp;</th>\n      <th id=\"T_f342a_level0_col0\" class=\"col_heading level0 col0\" >Number of Outlier Samples</th>\n      <th id=\"T_f342a_level0_col1\" class=\"col_heading level0 col1\" >Example Samples</th>\n    </tr>\n    <tr>\n      <th class=\"index_name level0\" >Column Name</th>\n      <th class=\"index_name level1\" >Range of Detected Normal String Lengths</th>\n      <th class=\"index_name level2\" >Range of Detected Outlier String Lengths</th>\n      <th class=\"blank col0\" >&nbsp;</th>\n      <th class=\"blank col1\" >&nbsp;</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th id=\"T_f342a_level0_row0\" class=\"row_heading level0 row0\" >total_sqft</th>\n      <th id=\"T_f342a_level1_row0\" class=\"row_heading level1 row0\" >2 - 6</th>\n      <th id=\"T_f342a_level2_row0\" class=\"row_heading level2 row0\" >11 - 17</th>\n      <td id=\"T_f342a_row0_col0\" class=\"data row0 col0\" >174</td>\n      <td id=\"T_f342a_row0_col1\" class=\"data row0 col1\" >['2805 - 3565', '1482 - 1846', '1250 - 1305']</td>\n    </tr>\n  </tbody>\n</table>\n"
+      }
+    },
+    "5aa249dc62814c859e802b5684090765": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "bebc72cd79ed48fba65ab4333305415d": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "1b9fab4ba47841249c2ef796ce20b7d1": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_8217640a7d4d43948143d48b520002fc",
+        "style": "IPY_MODEL_1801d6a356764419b3b7c42d1668590c",
+        "value": "<br><a href=\"#summary_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-ZZ14T\" style=\"font-size: 14px;\">Go to top</a>"
+      }
+    },
+    "8217640a7d4d43948143d48b520002fc": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "1801d6a356764419b3b7c42d1668590c": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "7833044ea0f546aa9cfcd17168c3fc5f": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "ecf84e324baa4f8283cad0dddd622842": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "e33f80f2af2b4e00ba3ef938f2e7ca7f": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "cde6a820376a4573a3753b18ba7b13af": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "ff68ba31cf3348b6b355f620ebcc45f4": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "d83aa9dc37114173be16711e1cea841a": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "children": [
+          "IPY_MODEL_c2435f6b01f54043964400b16154b9d9",
+          "IPY_MODEL_c50528607f04497686189acc7233012b"
+        ],
+        "layout": "IPY_MODEL_a4d110bb2338498fb021ea3c1f0f3765"
+      }
+    },
+    "c2435f6b01f54043964400b16154b9d9": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_daa48eddb4014d08be6f4769d5de87c4",
+        "style": "IPY_MODEL_524499ec50074b7b995c90b2428e8414",
+        "value": "<span id=\"summary_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-TI5ZL\"></span>"
+      }
+    },
+    "daa48eddb4014d08be6f4769d5de87c4": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "524499ec50074b7b995c90b2428e8414": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "c50528607f04497686189acc7233012b": {
+      "model_name": "AccordionModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [
+          "rendered_html",
+          "jp-RenderedHTMLCommon",
+          "jp-RenderedHTML",
+          "jp-OutputArea-output"
+        ],
+        "_titles": {
+          "0": "Passed"
+        },
+        "children": [
+          "IPY_MODEL_fed6392fe0ca454fbf14142c3a4e1523"
+        ],
+        "layout": "IPY_MODEL_97ec2d55e2f6487d8e7f7f2987cff898",
+        "selected_index": null
+      }
+    },
+    "fed6392fe0ca454fbf14142c3a4e1523": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "children": [
+          "IPY_MODEL_af9ea54cfc104dcf9a5b8825ebfab708",
+          "IPY_MODEL_c298a62e3cc044a9a94c4b195583ff89",
+          "IPY_MODEL_3bb842a03c274052b34254d9ed7f841c",
+          "IPY_MODEL_3398d30975d34c368929eb705b5fa91b",
+          "IPY_MODEL_902b471e1ba240e0aa2876f1408bb06c"
+        ],
+        "layout": "IPY_MODEL_fb982776d3924bf3bf2888cc3ae01ee5"
+      }
+    },
+    "af9ea54cfc104dcf9a5b8825ebfab708": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_fe7a6e4a365a478784e0575ebf4186b8",
+        "style": "IPY_MODEL_1874de52e198478880f09670d52bcd20",
+        "value": "<style type=\"text/css\">\n#T_34ec5 table {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_34ec5 thead {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_34ec5 tbody {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_34ec5 th {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_34ec5 td {\n  text-align: left;\n  white-space: pre-wrap;\n}\n</style>\n<table id=\"T_34ec5\">\n  <thead>\n    <tr>\n      <th id=\"T_34ec5_level0_col0\" class=\"col_heading level0 col0\" >Status</th>\n      <th id=\"T_34ec5_level0_col1\" class=\"col_heading level0 col1\" >Check</th>\n      <th id=\"T_34ec5_level0_col2\" class=\"col_heading level0 col2\" >Condition</th>\n      <th id=\"T_34ec5_level0_col3\" class=\"col_heading level0 col3\" >More Info</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td id=\"T_34ec5_row0_col0\" class=\"data row0 col0\" ><div style=\"color: green;text-align: center\">\u2713</div></td>\n      <td id=\"T_34ec5_row0_col1\" class=\"data row0 col1\" ><a href=\"#MixedNulls_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-TI5ZL\">Mixed Nulls</a></td>\n      <td id=\"T_34ec5_row0_col2\" class=\"data row0 col2\" >Number of different null types is less or equal to 1</td>\n      <td id=\"T_34ec5_row0_col3\" class=\"data row0 col3\" >Passed for 9 relevant columns</td>\n    </tr>\n    <tr>\n      <td id=\"T_34ec5_row1_col0\" class=\"data row1 col0\" ><div style=\"color: green;text-align: center\">\u2713</div></td>\n      <td id=\"T_34ec5_row1_col1\" class=\"data row1 col1\" ><a href=\"#FeatureLabelCorrelation_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-TI5ZL\">Feature Label Correlation</a></td>\n      <td id=\"T_34ec5_row1_col2\" class=\"data row1 col2\" >Features' Predictive Power Score is less than 0.8</td>\n      <td id=\"T_34ec5_row1_col3\" class=\"data row1 col3\" >Passed for 8 relevant columns</td>\n    </tr>\n    <tr>\n      <td id=\"T_34ec5_row2_col0\" class=\"data row2 col0\" ><div style=\"color: green;text-align: center\">\u2713</div></td>\n      <td id=\"T_34ec5_row2_col1\" class=\"data row2 col1\" >Single Value in Column</td>\n      <td id=\"T_34ec5_row2_col2\" class=\"data row2 col2\" >Does not contain only a single value</td>\n      <td id=\"T_34ec5_row2_col3\" class=\"data row2 col3\" >Passed for 9 relevant columns</td>\n    </tr>\n    <tr>\n      <td id=\"T_34ec5_row3_col0\" class=\"data row3 col0\" ><div style=\"color: green;text-align: center\">\u2713</div></td>\n      <td id=\"T_34ec5_row3_col1\" class=\"data row3 col1\" >Special Characters</td>\n      <td id=\"T_34ec5_row3_col2\" class=\"data row3 col2\" >Ratio of samples containing solely special character is less or equal to 0.1%</td>\n      <td id=\"T_34ec5_row3_col3\" class=\"data row3 col3\" >Passed for 9 relevant columns</td>\n    </tr>\n  </tbody>\n</table>\n"
+      }
+    },
+    "fe7a6e4a365a478784e0575ebf4186b8": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "1874de52e198478880f09670d52bcd20": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "c298a62e3cc044a9a94c4b195583ff89": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_d581524cb9204111a2c36c85e49aa245",
+        "style": "IPY_MODEL_1eaae950dec846a3b288f6fd04c063d8",
+        "value": "<hr style=\"background-color: #eee;border: 0 none;color: #eee;height: 4px;\">"
+      }
+    },
+    "d581524cb9204111a2c36c85e49aa245": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "1eaae950dec846a3b288f6fd04c063d8": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "3bb842a03c274052b34254d9ed7f841c": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [
+          "rendered_html",
+          "jp-RenderedHTMLCommon",
+          "jp-RenderedHTML",
+          "jp-OutputArea-output"
+        ],
+        "children": [
+          "IPY_MODEL_e367f9ed967d4f20b687bac54f7034dd",
+          "IPY_MODEL_8b3c340eb1c4454fa2c5d4299dc57403",
+          "IPY_MODEL_7011957ed7f7494191cc93f3b625f929",
+          "IPY_MODEL_6c79385ee890445790ee3e2719158c0a"
+        ],
+        "layout": "IPY_MODEL_9aaec710df3345b2ba5edadcf3c664ac"
+      }
+    },
+    "e367f9ed967d4f20b687bac54f7034dd": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_9e526a23a7394de99dca068b0db5378d",
+        "style": "IPY_MODEL_6a61f0c867164a94b0db69b71a2451a6",
+        "value": "<h4 id=\"MixedNulls_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-TI5ZL\"><b>Mixed Nulls</b></h4>"
+      }
+    },
+    "9e526a23a7394de99dca068b0db5378d": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "6a61f0c867164a94b0db69b71a2451a6": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "8b3c340eb1c4454fa2c5d4299dc57403": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_254f1614b92f4a6a8396723e88e79506",
+        "style": "IPY_MODEL_d28d2d74952c46369d342884f0d0b18e",
+        "value": "<p>Search for various types of null values, including string representations of null.</p>"
+      }
+    },
+    "254f1614b92f4a6a8396723e88e79506": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "d28d2d74952c46369d342884f0d0b18e": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "7011957ed7f7494191cc93f3b625f929": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_a5778c9873294e39be5c38ed099553c5",
+        "style": "IPY_MODEL_fb92661d6a104530a6e3a1f48fa30b35",
+        "value": "<h5><b>Conditions Summary</b></h5><style type=\"text/css\">\n#T_6175a table {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_6175a thead {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_6175a tbody {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_6175a th {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_6175a td {\n  text-align: left;\n  white-space: pre-wrap;\n}\n</style>\n<table id=\"T_6175a\">\n  <thead>\n    <tr>\n      <th id=\"T_6175a_level0_col0\" class=\"col_heading level0 col0\" >Status</th>\n      <th id=\"T_6175a_level0_col1\" class=\"col_heading level0 col1\" >Condition</th>\n      <th id=\"T_6175a_level0_col2\" class=\"col_heading level0 col2\" >More Info</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td id=\"T_6175a_row0_col0\" class=\"data row0 col0\" ><div style=\"color: green;text-align: center\">\u2713</div></td>\n      <td id=\"T_6175a_row0_col1\" class=\"data row0 col1\" >Number of different null types is less or equal to 1</td>\n      <td id=\"T_6175a_row0_col2\" class=\"data row0 col2\" >Passed for 9 relevant columns</td>\n    </tr>\n  </tbody>\n</table>\n"
+      }
+    },
+    "a5778c9873294e39be5c38ed099553c5": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "fb92661d6a104530a6e3a1f48fa30b35": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "6c79385ee890445790ee3e2719158c0a": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "children": [
+          "IPY_MODEL_b203b47b8e4d4e90a18c1cd9150d3f7a",
+          "IPY_MODEL_427cfb10c94a4cb2a67edfefd0552791",
+          "IPY_MODEL_a659d13e5aa34977b9fad705304f5e04",
+          "IPY_MODEL_8fbb2a1ca46a4ef28cff80e403f20ec8"
+        ],
+        "layout": "IPY_MODEL_3284e189dc53400ea66ac89769a18f22"
+      }
+    },
+    "b203b47b8e4d4e90a18c1cd9150d3f7a": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_52a6c24aba4446069291b6d939fc9a26",
+        "style": "IPY_MODEL_91e2f6039dea43c49a7802c14e5acf28",
+        "value": "<h5><b>Additional Outputs</b></h5>"
+      }
+    },
+    "52a6c24aba4446069291b6d939fc9a26": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "91e2f6039dea43c49a7802c14e5acf28": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "427cfb10c94a4cb2a67edfefd0552791": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_d2d99a0ffd614ecd916a90a7f7bf302d",
+        "style": "IPY_MODEL_384724f2738f49e5b85a62da6b565035",
+        "value": "<div>* showing only the top 10 columns, you can change it using n_top_columns param</div>"
+      }
+    },
+    "d2d99a0ffd614ecd916a90a7f7bf302d": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "384724f2738f49e5b85a62da6b565035": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "a659d13e5aa34977b9fad705304f5e04": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_0882908793a74ef68d2f1331bf90705f",
+        "style": "IPY_MODEL_f49f93df1f314e28b5d96931d1f69f39",
+        "value": "<style type=\"text/css\">\n#T_21641 table {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_21641 thead {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_21641 tbody {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_21641 th {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_21641 td {\n  text-align: left;\n  white-space: pre-wrap;\n}\n</style>\n<table id=\"T_21641\">\n  <thead>\n    <tr>\n      <th class=\"blank\" >&nbsp;</th>\n      <th class=\"blank level0\" >&nbsp;</th>\n      <th id=\"T_21641_level0_col0\" class=\"col_heading level0 col0\" >Count</th>\n      <th id=\"T_21641_level0_col1\" class=\"col_heading level0 col1\" >Percent of data</th>\n    </tr>\n    <tr>\n      <th class=\"index_name level0\" >Column Name</th>\n      <th class=\"index_name level1\" >Value</th>\n      <th class=\"blank col0\" >&nbsp;</th>\n      <th class=\"blank col1\" >&nbsp;</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th id=\"T_21641_level0_row0\" class=\"row_heading level0 row0\" >location</th>\n      <th id=\"T_21641_level1_row0\" class=\"row_heading level1 row0\" >numpy.nan</th>\n      <td id=\"T_21641_row0_col0\" class=\"data row0 col0\" >1</td>\n      <td id=\"T_21641_row0_col1\" class=\"data row0 col1\" >0.0075%</td>\n    </tr>\n    <tr>\n      <th id=\"T_21641_level0_row1\" class=\"row_heading level0 row1\" >size</th>\n      <th id=\"T_21641_level1_row1\" class=\"row_heading level1 row1\" >numpy.nan</th>\n      <td id=\"T_21641_row1_col0\" class=\"data row1 col0\" >16</td>\n      <td id=\"T_21641_row1_col1\" class=\"data row1 col1\" >0.12%</td>\n    </tr>\n    <tr>\n      <th id=\"T_21641_level0_row2\" class=\"row_heading level0 row2\" >society</th>\n      <th id=\"T_21641_level1_row2\" class=\"row_heading level1 row2\" >numpy.nan</th>\n      <td id=\"T_21641_row2_col0\" class=\"data row2 col0\" >5502</td>\n      <td id=\"T_21641_row2_col1\" class=\"data row2 col1\" >41.31%</td>\n    </tr>\n    <tr>\n      <th id=\"T_21641_level0_row3\" class=\"row_heading level0 row3\" >bath</th>\n      <th id=\"T_21641_level1_row3\" class=\"row_heading level1 row3\" >nan</th>\n      <td id=\"T_21641_row3_col0\" class=\"data row3 col0\" >73</td>\n      <td id=\"T_21641_row3_col1\" class=\"data row3 col1\" >0.55%</td>\n    </tr>\n    <tr>\n      <th id=\"T_21641_level0_row4\" class=\"row_heading level0 row4\" >balcony</th>\n      <th id=\"T_21641_level1_row4\" class=\"row_heading level1 row4\" >nan</th>\n      <td id=\"T_21641_row4_col0\" class=\"data row4 col0\" >609</td>\n      <td id=\"T_21641_row4_col1\" class=\"data row4 col1\" >4.57%</td>\n    </tr>\n  </tbody>\n</table>\n"
+      }
+    },
+    "0882908793a74ef68d2f1331bf90705f": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "f49f93df1f314e28b5d96931d1f69f39": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "8fbb2a1ca46a4ef28cff80e403f20ec8": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_05a639ef768b4c63b6195ea49c56a074",
+        "style": "IPY_MODEL_9cbcb6c1de8e4d8abd6ca2732ba4674e",
+        "value": "<br><a href=\"#summary_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-TI5ZL\" style=\"font-size: 14px;\">Go to top</a>"
+      }
+    },
+    "05a639ef768b4c63b6195ea49c56a074": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "9cbcb6c1de8e4d8abd6ca2732ba4674e": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "3284e189dc53400ea66ac89769a18f22": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "9aaec710df3345b2ba5edadcf3c664ac": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "3398d30975d34c368929eb705b5fa91b": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_05a7d23cb6b44f29b3f0c2c063145436",
+        "style": "IPY_MODEL_5358a9bf110647fb8997b19150f40253",
+        "value": "<hr style=\"background-color: #eee;border: 0 none;color: #eee;height: 4px;\">"
+      }
+    },
+    "05a7d23cb6b44f29b3f0c2c063145436": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "5358a9bf110647fb8997b19150f40253": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "902b471e1ba240e0aa2876f1408bb06c": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [
+          "rendered_html",
+          "jp-RenderedHTMLCommon",
+          "jp-RenderedHTML",
+          "jp-OutputArea-output"
+        ],
+        "children": [
+          "IPY_MODEL_3689a0e61dd84d869ced9f524eb9486a",
+          "IPY_MODEL_2168f4cf8ba24519a57ee7e29dd822ef",
+          "IPY_MODEL_70e93a1ec3254e78be060f6defb2baa7",
+          "IPY_MODEL_9abd41418c4943fcb0494977aa324b5f"
+        ],
+        "layout": "IPY_MODEL_0921aab410a845b9a13392382c91fa02"
+      }
+    },
+    "3689a0e61dd84d869ced9f524eb9486a": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_d487435953f34f7ab2cec7a6fcf97ef0",
+        "style": "IPY_MODEL_09a493eb6a9c4bd29f2c9f273f7c29cb",
+        "value": "<h4 id=\"FeatureLabelCorrelation_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-TI5ZL\"><b>Feature Label Correlation</b></h4>"
+      }
+    },
+    "d487435953f34f7ab2cec7a6fcf97ef0": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "09a493eb6a9c4bd29f2c9f273f7c29cb": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "2168f4cf8ba24519a57ee7e29dd822ef": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_8fb8c178645c4a638e06e3a085d57b65",
+        "style": "IPY_MODEL_2e81132a0b6447f4b6b69ee95e819f05",
+        "value": "<p>Return the PPS (Predictive Power Score) of all features in relation to the label.</p>"
+      }
+    },
+    "8fb8c178645c4a638e06e3a085d57b65": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "2e81132a0b6447f4b6b69ee95e819f05": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "70e93a1ec3254e78be060f6defb2baa7": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_f98dfe6cd64b4c07974f8a50d6cbae9a",
+        "style": "IPY_MODEL_fb42203796f34797b6ad0dea20c191b2",
+        "value": "<h5><b>Conditions Summary</b></h5><style type=\"text/css\">\n#T_ab914 table {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_ab914 thead {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_ab914 tbody {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_ab914 th {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_ab914 td {\n  text-align: left;\n  white-space: pre-wrap;\n}\n</style>\n<table id=\"T_ab914\">\n  <thead>\n    <tr>\n      <th id=\"T_ab914_level0_col0\" class=\"col_heading level0 col0\" >Status</th>\n      <th id=\"T_ab914_level0_col1\" class=\"col_heading level0 col1\" >Condition</th>\n      <th id=\"T_ab914_level0_col2\" class=\"col_heading level0 col2\" >More Info</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td id=\"T_ab914_row0_col0\" class=\"data row0 col0\" ><div style=\"color: green;text-align: center\">\u2713</div></td>\n      <td id=\"T_ab914_row0_col1\" class=\"data row0 col1\" >Features' Predictive Power Score is less than 0.8</td>\n      <td id=\"T_ab914_row0_col2\" class=\"data row0 col2\" >Passed for 8 relevant columns</td>\n    </tr>\n  </tbody>\n</table>\n"
+      }
+    },
+    "f98dfe6cd64b4c07974f8a50d6cbae9a": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "fb42203796f34797b6ad0dea20c191b2": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "9abd41418c4943fcb0494977aa324b5f": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "children": [
+          "IPY_MODEL_d0d85868866c486e8c1b8f59f68bc628",
+          "IPY_MODEL_13ab342f6bd14e6e8750e4020f9a077e",
+          "IPY_MODEL_6b591ca3e1504f33810a64314821e04c",
+          "IPY_MODEL_f33fa65d449f45ebb3eef579b6863c78"
+        ],
+        "layout": "IPY_MODEL_d8bc3029a2ed483a80106e9e00a07ccd"
+      }
+    },
+    "d0d85868866c486e8c1b8f59f68bc628": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_78c767a34e504cc0b0496c8992ba79f6",
+        "style": "IPY_MODEL_36159f2516054b82aff36311c72675a7",
+        "value": "<h5><b>Additional Outputs</b></h5>"
+      }
+    },
+    "78c767a34e504cc0b0496c8992ba79f6": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "36159f2516054b82aff36311c72675a7": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "13ab342f6bd14e6e8750e4020f9a077e": {
+      "model_name": "FigureModel",
+      "model_module": "jupyterlab-plotly",
+      "model_module_version": "^5.5.0",
+      "state": {
+        "_config": {
+          "plotlyServerURL": "https://plot.ly"
+        },
+        "_data": [
+          {
+            "marker": {
+              "color": "#00008b"
+            },
+            "name": "Train",
+            "text": [
+              "<b>0.39</b>",
+              "<b>0.17</b>",
+              "<b>0.16</b>",
+              "<b>0.12</b>",
+              "<b>0.02</b>"
+            ],
+            "textposition": "outside",
+            "x": [
+              "society",
+              "total_sqft",
+              "bath",
+              "size",
+              "location"
+            ],
+            "y": {
+              "dtype": "float64",
+              "shape": [
+                5
+              ]
+            },
+            "type": "bar",
+            "uid": "bbed120b-207f-4ffb-a75d-48e679d39fa2"
+          }
+        ],
+        "_dom_classes": [],
+        "_js2py_layoutDelta": {},
+        "_js2py_pointsCallback": {},
+        "_js2py_relayout": {},
+        "_js2py_restyle": {},
+        "_js2py_traceDeltas": {},
+        "_js2py_update": {},
+        "_layout": {
+          "barmode": "group",
+          "height": 500,
+          "legend": {
+            "x": 1.0,
+            "y": 1.0
+          },
+          "template": {
+            "data": {
+              "barpolar": [
+                {
+                  "marker": {
+                    "line": {
+                      "color": "#E5ECF6",
+                      "width": 0.5
+                    },
+                    "pattern": {
+                      "fillmode": "overlay",
+                      "size": 10,
+                      "solidity": 0.2
+                    }
+                  },
+                  "type": "barpolar"
+                }
+              ],
+              "bar": [
+                {
+                  "error_x": {
+                    "color": "#2a3f5f"
+                  },
+                  "error_y": {
+                    "color": "#2a3f5f"
+                  },
+                  "marker": {
+                    "line": {
+                      "color": "#E5ECF6",
+                      "width": 0.5
+                    },
+                    "pattern": {
+                      "fillmode": "overlay",
+                      "size": 10,
+                      "solidity": 0.2
+                    }
+                  },
+                  "type": "bar"
+                }
+              ],
+              "carpet": [
+                {
+                  "aaxis": {
+                    "endlinecolor": "#2a3f5f",
+                    "gridcolor": "white",
+                    "linecolor": "white",
+                    "minorgridcolor": "white",
+                    "startlinecolor": "#2a3f5f"
+                  },
+                  "baxis": {
+                    "endlinecolor": "#2a3f5f",
+                    "gridcolor": "white",
+                    "linecolor": "white",
+                    "minorgridcolor": "white",
+                    "startlinecolor": "#2a3f5f"
+                  },
+                  "type": "carpet"
+                }
+              ],
+              "choropleth": [
+                {
+                  "colorbar": {
+                    "outlinewidth": 0,
+                    "ticks": ""
+                  },
+                  "type": "choropleth"
+                }
+              ],
+              "contourcarpet": [
+                {
+                  "colorbar": {
+                    "outlinewidth": 0,
+                    "ticks": ""
+                  },
+                  "type": "contourcarpet"
+                }
+              ],
+              "contour": [
+                {
+                  "colorbar": {
+                    "outlinewidth": 0,
+                    "ticks": ""
+                  },
+                  "colorscale": [
+                    [
+                      0.0,
+                      "#0d0887"
+                    ],
+                    [
+                      0.1111111111111111,
+                      "#46039f"
+                    ],
+                    [
+                      0.2222222222222222,
+                      "#7201a8"
+                    ],
+                    [
+                      0.3333333333333333,
+                      "#9c179e"
+                    ],
+                    [
+                      0.4444444444444444,
+                      "#bd3786"
+                    ],
+                    [
+                      0.5555555555555556,
+                      "#d8576b"
+                    ],
+                    [
+                      0.6666666666666666,
+                      "#ed7953"
+                    ],
+                    [
+                      0.7777777777777778,
+                      "#fb9f3a"
+                    ],
+                    [
+                      0.8888888888888888,
+                      "#fdca26"
+                    ],
+                    [
+                      1.0,
+                      "#f0f921"
+                    ]
+                  ],
+                  "type": "contour"
+                }
+              ],
+              "heatmapgl": [
+                {
+                  "colorbar": {
+                    "outlinewidth": 0,
+                    "ticks": ""
+                  },
+                  "colorscale": [
+                    [
+                      0.0,
+                      "#0d0887"
+                    ],
+                    [
+                      0.1111111111111111,
+                      "#46039f"
+                    ],
+                    [
+                      0.2222222222222222,
+                      "#7201a8"
+                    ],
+                    [
+                      0.3333333333333333,
+                      "#9c179e"
+                    ],
+                    [
+                      0.4444444444444444,
+                      "#bd3786"
+                    ],
+                    [
+                      0.5555555555555556,
+                      "#d8576b"
+                    ],
+                    [
+                      0.6666666666666666,
+                      "#ed7953"
+                    ],
+                    [
+                      0.7777777777777778,
+                      "#fb9f3a"
+                    ],
+                    [
+                      0.8888888888888888,
+                      "#fdca26"
+                    ],
+                    [
+                      1.0,
+                      "#f0f921"
+                    ]
+                  ],
+                  "type": "heatmapgl"
+                }
+              ],
+              "heatmap": [
+                {
+                  "colorbar": {
+                    "outlinewidth": 0,
+                    "ticks": ""
+                  },
+                  "colorscale": [
+                    [
+                      0.0,
+                      "#0d0887"
+                    ],
+                    [
+                      0.1111111111111111,
+                      "#46039f"
+                    ],
+                    [
+                      0.2222222222222222,
+                      "#7201a8"
+                    ],
+                    [
+                      0.3333333333333333,
+                      "#9c179e"
+                    ],
+                    [
+                      0.4444444444444444,
+                      "#bd3786"
+                    ],
+                    [
+                      0.5555555555555556,
+                      "#d8576b"
+                    ],
+                    [
+                      0.6666666666666666,
+                      "#ed7953"
+                    ],
+                    [
+                      0.7777777777777778,
+                      "#fb9f3a"
+                    ],
+                    [
+                      0.8888888888888888,
+                      "#fdca26"
+                    ],
+                    [
+                      1.0,
+                      "#f0f921"
+                    ]
+                  ],
+                  "type": "heatmap"
+                }
+              ],
+              "histogram2dcontour": [
+                {
+                  "colorbar": {
+                    "outlinewidth": 0,
+                    "ticks": ""
+                  },
+                  "colorscale": [
+                    [
+                      0.0,
+                      "#0d0887"
+                    ],
+                    [
+                      0.1111111111111111,
+                      "#46039f"
+                    ],
+                    [
+                      0.2222222222222222,
+                      "#7201a8"
+                    ],
+                    [
+                      0.3333333333333333,
+                      "#9c179e"
+                    ],
+                    [
+                      0.4444444444444444,
+                      "#bd3786"
+                    ],
+                    [
+                      0.5555555555555556,
+                      "#d8576b"
+                    ],
+                    [
+                      0.6666666666666666,
+                      "#ed7953"
+                    ],
+                    [
+                      0.7777777777777778,
+                      "#fb9f3a"
+                    ],
+                    [
+                      0.8888888888888888,
+                      "#fdca26"
+                    ],
+                    [
+                      1.0,
+                      "#f0f921"
+                    ]
+                  ],
+                  "type": "histogram2dcontour"
+                }
+              ],
+              "histogram2d": [
+                {
+                  "colorbar": {
+                    "outlinewidth": 0,
+                    "ticks": ""
+                  },
+                  "colorscale": [
+                    [
+                      0.0,
+                      "#0d0887"
+                    ],
+                    [
+                      0.1111111111111111,
+                      "#46039f"
+                    ],
+                    [
+                      0.2222222222222222,
+                      "#7201a8"
+                    ],
+                    [
+                      0.3333333333333333,
+                      "#9c179e"
+                    ],
+                    [
+                      0.4444444444444444,
+                      "#bd3786"
+                    ],
+                    [
+                      0.5555555555555556,
+                      "#d8576b"
+                    ],
+                    [
+                      0.6666666666666666,
+                      "#ed7953"
+                    ],
+                    [
+                      0.7777777777777778,
+                      "#fb9f3a"
+                    ],
+                    [
+                      0.8888888888888888,
+                      "#fdca26"
+                    ],
+                    [
+                      1.0,
+                      "#f0f921"
+                    ]
+                  ],
+                  "type": "histogram2d"
+                }
+              ],
+              "histogram": [
+                {
+                  "marker": {
+                    "pattern": {
+                      "fillmode": "overlay",
+                      "size": 10,
+                      "solidity": 0.2
+                    }
+                  },
+                  "type": "histogram"
+                }
+              ],
+              "mesh3d": [
+                {
+                  "colorbar": {
+                    "outlinewidth": 0,
+                    "ticks": ""
+                  },
+                  "type": "mesh3d"
+                }
+              ],
+              "parcoords": [
+                {
+                  "line": {
+                    "colorbar": {
+                      "outlinewidth": 0,
+                      "ticks": ""
+                    }
+                  },
+                  "type": "parcoords"
+                }
+              ],
+              "pie": [
+                {
+                  "automargin": true,
+                  "type": "pie"
+                }
+              ],
+              "scatter3d": [
+                {
+                  "line": {
+                    "colorbar": {
+                      "outlinewidth": 0,
+                      "ticks": ""
+                    }
+                  },
+                  "marker": {
+                    "colorbar": {
+                      "outlinewidth": 0,
+                      "ticks": ""
+                    }
+                  },
+                  "type": "scatter3d"
+                }
+              ],
+              "scattercarpet": [
+                {
+                  "marker": {
+                    "colorbar": {
+                      "outlinewidth": 0,
+                      "ticks": ""
+                    }
+                  },
+                  "type": "scattercarpet"
+                }
+              ],
+              "scattergeo": [
+                {
+                  "marker": {
+                    "colorbar": {
+                      "outlinewidth": 0,
+                      "ticks": ""
+                    }
+                  },
+                  "type": "scattergeo"
+                }
+              ],
+              "scattergl": [
+                {
+                  "marker": {
+                    "colorbar": {
+                      "outlinewidth": 0,
+                      "ticks": ""
+                    }
+                  },
+                  "type": "scattergl"
+                }
+              ],
+              "scattermapbox": [
+                {
+                  "marker": {
+                    "colorbar": {
+                      "outlinewidth": 0,
+                      "ticks": ""
+                    }
+                  },
+                  "type": "scattermapbox"
+                }
+              ],
+              "scatterpolargl": [
+                {
+                  "marker": {
+                    "colorbar": {
+                      "outlinewidth": 0,
+                      "ticks": ""
+                    }
+                  },
+                  "type": "scatterpolargl"
+                }
+              ],
+              "scatterpolar": [
+                {
+                  "marker": {
+                    "colorbar": {
+                      "outlinewidth": 0,
+                      "ticks": ""
+                    }
+                  },
+                  "type": "scatterpolar"
+                }
+              ],
+              "scatter": [
+                {
+                  "marker": {
+                    "colorbar": {
+                      "outlinewidth": 0,
+                      "ticks": ""
+                    }
+                  },
+                  "type": "scatter"
+                }
+              ],
+              "scatterternary": [
+                {
+                  "marker": {
+                    "colorbar": {
+                      "outlinewidth": 0,
+                      "ticks": ""
+                    }
+                  },
+                  "type": "scatterternary"
+                }
+              ],
+              "surface": [
+                {
+                  "colorbar": {
+                    "outlinewidth": 0,
+                    "ticks": ""
+                  },
+                  "colorscale": [
+                    [
+                      0.0,
+                      "#0d0887"
+                    ],
+                    [
+                      0.1111111111111111,
+                      "#46039f"
+                    ],
+                    [
+                      0.2222222222222222,
+                      "#7201a8"
+                    ],
+                    [
+                      0.3333333333333333,
+                      "#9c179e"
+                    ],
+                    [
+                      0.4444444444444444,
+                      "#bd3786"
+                    ],
+                    [
+                      0.5555555555555556,
+                      "#d8576b"
+                    ],
+                    [
+                      0.6666666666666666,
+                      "#ed7953"
+                    ],
+                    [
+                      0.7777777777777778,
+                      "#fb9f3a"
+                    ],
+                    [
+                      0.8888888888888888,
+                      "#fdca26"
+                    ],
+                    [
+                      1.0,
+                      "#f0f921"
+                    ]
+                  ],
+                  "type": "surface"
+                }
+              ],
+              "table": [
+                {
+                  "cells": {
+                    "fill": {
+                      "color": "#EBF0F8"
+                    },
+                    "line": {
+                      "color": "white"
+                    }
+                  },
+                  "header": {
+                    "fill": {
+                      "color": "#C8D4E3"
+                    },
+                    "line": {
+                      "color": "white"
+                    }
+                  },
+                  "type": "table"
+                }
+              ]
+            },
+            "layout": {
+              "annotationdefaults": {
+                "arrowcolor": "#2a3f5f",
+                "arrowhead": 0,
+                "arrowwidth": 1
+              },
+              "autotypenumbers": "strict",
+              "coloraxis": {
+                "colorbar": {
+                  "outlinewidth": 0,
+                  "ticks": ""
+                }
+              },
+              "colorscale": {
+                "diverging": [
+                  [
+                    0,
+                    "#8e0152"
+                  ],
+                  [
+                    0.1,
+                    "#c51b7d"
+                  ],
+                  [
+                    0.2,
+                    "#de77ae"
+                  ],
+                  [
+                    0.3,
+                    "#f1b6da"
+                  ],
+                  [
+                    0.4,
+                    "#fde0ef"
+                  ],
+                  [
+                    0.5,
+                    "#f7f7f7"
+                  ],
+                  [
+                    0.6,
+                    "#e6f5d0"
+                  ],
+                  [
+                    0.7,
+                    "#b8e186"
+                  ],
+                  [
+                    0.8,
+                    "#7fbc41"
+                  ],
+                  [
+                    0.9,
+                    "#4d9221"
+                  ],
+                  [
+                    1,
+                    "#276419"
+                  ]
+                ],
+                "sequential": [
+                  [
+                    0.0,
+                    "#0d0887"
+                  ],
+                  [
+                    0.1111111111111111,
+                    "#46039f"
+                  ],
+                  [
+                    0.2222222222222222,
+                    "#7201a8"
+                  ],
+                  [
+                    0.3333333333333333,
+                    "#9c179e"
+                  ],
+                  [
+                    0.4444444444444444,
+                    "#bd3786"
+                  ],
+                  [
+                    0.5555555555555556,
+                    "#d8576b"
+                  ],
+                  [
+                    0.6666666666666666,
+                    "#ed7953"
+                  ],
+                  [
+                    0.7777777777777778,
+                    "#fb9f3a"
+                  ],
+                  [
+                    0.8888888888888888,
+                    "#fdca26"
+                  ],
+                  [
+                    1.0,
+                    "#f0f921"
+                  ]
+                ],
+                "sequentialminus": [
+                  [
+                    0.0,
+                    "#0d0887"
+                  ],
+                  [
+                    0.1111111111111111,
+                    "#46039f"
+                  ],
+                  [
+                    0.2222222222222222,
+                    "#7201a8"
+                  ],
+                  [
+                    0.3333333333333333,
+                    "#9c179e"
+                  ],
+                  [
+                    0.4444444444444444,
+                    "#bd3786"
+                  ],
+                  [
+                    0.5555555555555556,
+                    "#d8576b"
+                  ],
+                  [
+                    0.6666666666666666,
+                    "#ed7953"
+                  ],
+                  [
+                    0.7777777777777778,
+                    "#fb9f3a"
+                  ],
+                  [
+                    0.8888888888888888,
+                    "#fdca26"
+                  ],
+                  [
+                    1.0,
+                    "#f0f921"
+                  ]
+                ]
+              },
+              "colorway": [
+                "#636efa",
+                "#EF553B",
+                "#00cc96",
+                "#ab63fa",
+                "#FFA15A",
+                "#19d3f3",
+                "#FF6692",
+                "#B6E880",
+                "#FF97FF",
+                "#FECB52"
+              ],
+              "font": {
+                "color": "#2a3f5f"
+              },
+              "geo": {
+                "bgcolor": "white",
+                "lakecolor": "white",
+                "landcolor": "#E5ECF6",
+                "showlakes": true,
+                "showland": true,
+                "subunitcolor": "white"
+              },
+              "hoverlabel": {
+                "align": "left"
+              },
+              "hovermode": "closest",
+              "mapbox": {
+                "style": "light"
+              },
+              "paper_bgcolor": "white",
+              "plot_bgcolor": "#E5ECF6",
+              "polar": {
+                "angularaxis": {
+                  "gridcolor": "white",
+                  "linecolor": "white",
+                  "ticks": ""
+                },
+                "bgcolor": "#E5ECF6",
+                "radialaxis": {
+                  "gridcolor": "white",
+                  "linecolor": "white",
+                  "ticks": ""
+                }
+              },
+              "scene": {
+                "xaxis": {
+                  "backgroundcolor": "#E5ECF6",
+                  "gridcolor": "white",
+                  "gridwidth": 2,
+                  "linecolor": "white",
+                  "showbackground": true,
+                  "ticks": "",
+                  "zerolinecolor": "white"
+                },
+                "yaxis": {
+                  "backgroundcolor": "#E5ECF6",
+                  "gridcolor": "white",
+                  "gridwidth": 2,
+                  "linecolor": "white",
+                  "showbackground": true,
+                  "ticks": "",
+                  "zerolinecolor": "white"
+                },
+                "zaxis": {
+                  "backgroundcolor": "#E5ECF6",
+                  "gridcolor": "white",
+                  "gridwidth": 2,
+                  "linecolor": "white",
+                  "showbackground": true,
+                  "ticks": "",
+                  "zerolinecolor": "white"
+                }
+              },
+              "shapedefaults": {
+                "line": {
+                  "color": "#2a3f5f"
+                }
+              },
+              "ternary": {
+                "aaxis": {
+                  "gridcolor": "white",
+                  "linecolor": "white",
+                  "ticks": ""
+                },
+                "baxis": {
+                  "gridcolor": "white",
+                  "linecolor": "white",
+                  "ticks": ""
+                },
+                "bgcolor": "#E5ECF6",
+                "caxis": {
+                  "gridcolor": "white",
+                  "linecolor": "white",
+                  "ticks": ""
+                }
+              },
+              "title": {
+                "x": 0.05
+              },
+              "xaxis": {
+                "automargin": true,
+                "gridcolor": "white",
+                "linecolor": "white",
+                "ticks": "",
+                "title": {
+                  "standoff": 15
+                },
+                "zerolinecolor": "white",
+                "zerolinewidth": 2
+              },
+              "yaxis": {
+                "automargin": true,
+                "gridcolor": "white",
+                "linecolor": "white",
+                "ticks": "",
+                "title": {
+                  "standoff": 15
+                },
+                "zerolinecolor": "white",
+                "zerolinewidth": 2
+              }
+            }
+          },
+          "title": {
+            "text": "Predictive Power Score (PPS) - Can a feature predict the label by itself?"
+          },
+          "xaxis": {
+            "range": [
+              -3,
+              7
+            ],
+            "title": {
+              "text": "Column"
+            },
+            "type": "category"
+          },
+          "yaxis": {
+            "range": [
+              0,
+              1.05
+            ],
+            "title": {
+              "text": "Predictive Power Score (PPS)"
+            }
+          }
+        },
+        "_py2js_addTraces": {},
+        "_py2js_animate": {},
+        "_py2js_deleteTraces": {},
+        "_py2js_moveTraces": {},
+        "_py2js_relayout": {},
+        "_py2js_removeLayoutProps": {},
+        "_py2js_removeTraceProps": {},
+        "_py2js_restyle": {},
+        "_py2js_update": {},
+        "_view_count": 0
+      },
+      "buffers": [
+        {
+          "encoding": "base64",
+          "path": [
+            "_data",
+            0,
+            "y",
+            "buffer"
+          ],
+          "data": "SOFiKLi72D9oc80UHpHFP4S2Fxj5OcQ/6NzonwQxvz9gbmGlGlWTPw=="
+        }
+      ]
+    },
+    "6b591ca3e1504f33810a64314821e04c": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_5985e335ed09419886db7d499c5d7046",
+        "style": "IPY_MODEL_6de427c51a6d4679926c43d3886fe97c",
+        "value": "<div>The Predictive Power Score (PPS) is used to estimate the ability of a feature to predict the label by itself (Read more about <a href=https://docs.deepchecks.com/en/stable/checks_gallery/tabular/train_test_validation/plot_feature_label_correlation_change.html target=\"_blank\">Predictive Power Score</a>). A high PPS (close to 1) can mean that this feature's success in predicting the label is actually due to data leakage - meaning that the feature holds information that is based on the label to begin with.</div>"
+      }
+    },
+    "5985e335ed09419886db7d499c5d7046": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "6de427c51a6d4679926c43d3886fe97c": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "f33fa65d449f45ebb3eef579b6863c78": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_f17462e475854937bb5d1115c61deba8",
+        "style": "IPY_MODEL_f1ffdb2a97074ec1a434ef62b8887554",
+        "value": "<br><a href=\"#summary_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-TI5ZL\" style=\"font-size: 14px;\">Go to top</a>"
+      }
+    },
+    "f17462e475854937bb5d1115c61deba8": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "f1ffdb2a97074ec1a434ef62b8887554": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "d8bc3029a2ed483a80106e9e00a07ccd": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "0921aab410a845b9a13392382c91fa02": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "fb982776d3924bf3bf2888cc3ae01ee5": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "97ec2d55e2f6487d8e7f7f2987cff898": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "a4d110bb2338498fb021ea3c1f0f3765": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "26067e1f7c534c34a9c701fe942bbbf6": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "children": [
+          "IPY_MODEL_ec32a1752fcf49d4bec8a2aa9cad7d9c",
+          "IPY_MODEL_e8c60a7751814799877ddfe5a7dd8e28"
+        ],
+        "layout": "IPY_MODEL_8eab82decfc6481296e3ec5824022438"
+      }
+    },
+    "ec32a1752fcf49d4bec8a2aa9cad7d9c": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_85fecfa8bbeb42568a4ab7a5f0941b2d",
+        "style": "IPY_MODEL_3fd1fd124abf49819e340bccdebd2599",
+        "value": "<span id=\"summary_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-VLTHG\"></span>"
+      }
+    },
+    "85fecfa8bbeb42568a4ab7a5f0941b2d": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "3fd1fd124abf49819e340bccdebd2599": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "e8c60a7751814799877ddfe5a7dd8e28": {
+      "model_name": "AccordionModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [
+          "rendered_html",
+          "jp-RenderedHTMLCommon",
+          "jp-RenderedHTML",
+          "jp-OutputArea-output"
+        ],
+        "_titles": {
+          "0": "Other"
+        },
+        "children": [
+          "IPY_MODEL_0eb72b8f97f04747a15533d399c9ea02"
+        ],
+        "layout": "IPY_MODEL_5669c316ff00420db889ca56e8506231",
+        "selected_index": null
+      }
+    },
+    "0eb72b8f97f04747a15533d399c9ea02": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "children": [
+          "IPY_MODEL_8195238d79d94b5b9456411d443f2bae",
+          "IPY_MODEL_89fc16a0031f4129977f315dd073a7a5",
+          "IPY_MODEL_f585fe1dca6948d58785ea3aa8057fde"
+        ],
+        "layout": "IPY_MODEL_e99101c4c77c4dacb1a08e9f37d356d5"
+      }
+    },
+    "8195238d79d94b5b9456411d443f2bae": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_0d24c8f1494b414c9363169cd45082a2",
+        "style": "IPY_MODEL_d4eb69ad45b14fb4ac1010c8869edf1a",
+        "value": "<style type=\"text/css\">\n#T_aa1aa table {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_aa1aa thead {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_aa1aa tbody {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_aa1aa th {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_aa1aa td {\n  text-align: left;\n  white-space: pre-wrap;\n}\n</style>\n<table id=\"T_aa1aa\">\n  <thead>\n    <tr>\n      <th id=\"T_aa1aa_level0_col0\" class=\"col_heading level0 col0\" >Check</th>\n      <th id=\"T_aa1aa_level0_col1\" class=\"col_heading level0 col1\" >Summary</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td id=\"T_aa1aa_row0_col0\" class=\"data row0 col0\" ><a href=\"#OutlierSampleDetection_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-VLTHG\">Outlier Sample Detection</a></td>\n      <td id=\"T_aa1aa_row0_col1\" class=\"data row0 col1\" >Detects outliers in a dataset using the LoOP algorithm. <a href=\"https://docs.deepchecks.com/0.8/checks_gallery/tabular/data_integrity/plot_outlier_sample_detection.html?utm_source=display_output&utm_medium=referral&utm_campaign=check_link\" target=\"_blank\">Read More...</a></td>\n    </tr>\n  </tbody>\n</table>\n"
+      }
+    },
+    "0d24c8f1494b414c9363169cd45082a2": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "d4eb69ad45b14fb4ac1010c8869edf1a": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "89fc16a0031f4129977f315dd073a7a5": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_ecf41140bba443f0823e3e9515e144d2",
+        "style": "IPY_MODEL_553b205ffb0546e58f49b9832024235c",
+        "value": "<hr style=\"background-color: #eee;border: 0 none;color: #eee;height: 4px;\">"
+      }
+    },
+    "ecf41140bba443f0823e3e9515e144d2": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "553b205ffb0546e58f49b9832024235c": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "f585fe1dca6948d58785ea3aa8057fde": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [
+          "rendered_html",
+          "jp-RenderedHTMLCommon",
+          "jp-RenderedHTML",
+          "jp-OutputArea-output"
+        ],
+        "children": [
+          "IPY_MODEL_14e9a1f816464470be3ef1f227a86c63",
+          "IPY_MODEL_67f1c0346a604fc1bbcdd8975158a56c",
+          "IPY_MODEL_eddb497cbaf84492a8c71e37be104cea"
+        ],
+        "layout": "IPY_MODEL_4e86cbf190bb4777b69f47ce9efeeb9f"
+      }
+    },
+    "14e9a1f816464470be3ef1f227a86c63": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_918aa544d9c840189f70d03655c97755",
+        "style": "IPY_MODEL_613f0cf602c4443fbb0b42b128860b49",
+        "value": "<h4 id=\"OutlierSampleDetection_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-VLTHG\"><b>Outlier Sample Detection</b></h4>"
+      }
+    },
+    "918aa544d9c840189f70d03655c97755": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "613f0cf602c4443fbb0b42b128860b49": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "67f1c0346a604fc1bbcdd8975158a56c": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_97d1bf05325b45a0967e3c7243bbcaed",
+        "style": "IPY_MODEL_7009915ea03b47d98579edc288ea98e2",
+        "value": "<p>Detects outliers in a dataset using the LoOP algorithm.</p>"
+      }
+    },
+    "97d1bf05325b45a0967e3c7243bbcaed": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "7009915ea03b47d98579edc288ea98e2": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "eddb497cbaf84492a8c71e37be104cea": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "children": [
+          "IPY_MODEL_7464ad04df674bd9a7bec5eaf9552ca9",
+          "IPY_MODEL_d4290984e67342129c8f2e5f8f281b75",
+          "IPY_MODEL_b01927ef50374a4496c40ea622d592ea",
+          "IPY_MODEL_86fc9a3c02a64d5b9dd1cc22c4eba133",
+          "IPY_MODEL_b4fa9953c13a420b823f9bf8b400e3ad"
+        ],
+        "layout": "IPY_MODEL_e760269ff5cb466f901914407abc1992"
+      }
+    },
+    "7464ad04df674bd9a7bec5eaf9552ca9": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_306c5e445b17421ba81bf736490e2035",
+        "style": "IPY_MODEL_e117cfecf6e64938b9b347e0dee0391f",
+        "value": "<h5><b>Additional Outputs</b></h5>"
+      }
+    },
+    "306c5e445b17421ba81bf736490e2035": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "e117cfecf6e64938b9b347e0dee0391f": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "d4290984e67342129c8f2e5f8f281b75": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_a7e89c8a4e234314a0ef0ab42b4955ed",
+        "style": "IPY_MODEL_50b77da5b03a4632bd60290c139c4871",
+        "value": "<div><span>\n                    The Outlier Probability Score is calculated by the LoOP algorithm which measures the local deviation\n                    of density of a given sample with respect to its neighbors. These outlier scores are directly\n                    interpretable as a probability of an object being an outlier (see\n                    <a href=\"https://www.dbs.ifi.lmu.de/Publikationen/Papers/LoOP1649.pdf\"\n                    target=\"_blank\" rel=\"noopener noreferrer\">link</a> for more information).<br><br>\n                    </span></div>"
+      }
+    },
+    "a7e89c8a4e234314a0ef0ab42b4955ed": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "50b77da5b03a4632bd60290c139c4871": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "b01927ef50374a4496c40ea622d592ea": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_152533ece92d4b5d945be99e48804dfc",
+        "style": "IPY_MODEL_a7a242dae4804098b61cfa136d96ad40",
+        "value": "<style type=\"text/css\">\n#T_e122e table {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_e122e thead {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_e122e tbody {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_e122e th {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_e122e td {\n  text-align: left;\n  white-space: pre-wrap;\n}\n</style>\n<table id=\"T_e122e\">\n  <thead>\n    <tr>\n      <th class=\"blank level0\" >&nbsp;</th>\n      <th id=\"T_e122e_level0_col0\" class=\"col_heading level0 col0\" >Outlier Probability Score</th>\n      <th id=\"T_e122e_level0_col1\" class=\"col_heading level0 col1\" >area_type</th>\n      <th id=\"T_e122e_level0_col2\" class=\"col_heading level0 col2\" >availability</th>\n      <th id=\"T_e122e_level0_col3\" class=\"col_heading level0 col3\" >location</th>\n      <th id=\"T_e122e_level0_col4\" class=\"col_heading level0 col4\" >size</th>\n      <th id=\"T_e122e_level0_col5\" class=\"col_heading level0 col5\" >society</th>\n      <th id=\"T_e122e_level0_col6\" class=\"col_heading level0 col6\" >total_sqft</th>\n      <th id=\"T_e122e_level0_col7\" class=\"col_heading level0 col7\" >bath</th>\n      <th id=\"T_e122e_level0_col8\" class=\"col_heading level0 col8\" >balcony</th>\n      <th id=\"T_e122e_level0_col9\" class=\"col_heading level0 col9\" >price</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th id=\"T_e122e_level0_row0\" class=\"row_heading level0 row0\" >8703</th>\n      <td id=\"T_e122e_row0_col0\" class=\"data row0 col0\" >1.00</td>\n      <td id=\"T_e122e_row0_col1\" class=\"data row0 col1\" >Plot  Area</td>\n      <td id=\"T_e122e_row0_col2\" class=\"data row0 col2\" >Immediate Possession</td>\n      <td id=\"T_e122e_row0_col3\" class=\"data row0 col3\" >Mysore Road</td>\n      <td id=\"T_e122e_row0_col4\" class=\"data row0 col4\" >nan</td>\n      <td id=\"T_e122e_row0_col5\" class=\"data row0 col5\" >Naoden </td>\n      <td id=\"T_e122e_row0_col6\" class=\"data row0 col6\" >1200 - 2400</td>\n      <td id=\"T_e122e_row0_col7\" class=\"data row0 col7\" >nan</td>\n      <td id=\"T_e122e_row0_col8\" class=\"data row0 col8\" >nan</td>\n      <td id=\"T_e122e_row0_col9\" class=\"data row0 col9\" >42.30</td>\n    </tr>\n    <tr>\n      <th id=\"T_e122e_level0_row1\" class=\"row_heading level0 row1\" >2862</th>\n      <td id=\"T_e122e_row1_col0\" class=\"data row1 col0\" >1.00</td>\n      <td id=\"T_e122e_row1_col1\" class=\"data row1 col1\" >Plot  Area</td>\n      <td id=\"T_e122e_row1_col2\" class=\"data row1 col2\" >Immediate Possession</td>\n      <td id=\"T_e122e_row1_col3\" class=\"data row1 col3\" >Devanahalli</td>\n      <td id=\"T_e122e_row1_col4\" class=\"data row1 col4\" >nan</td>\n      <td id=\"T_e122e_row1_col5\" class=\"data row1 col5\" >Ajleyor</td>\n      <td id=\"T_e122e_row1_col6\" class=\"data row1 col6\" >1500 - 2400</td>\n      <td id=\"T_e122e_row1_col7\" class=\"data row1 col7\" >nan</td>\n      <td id=\"T_e122e_row1_col8\" class=\"data row1 col8\" >nan</td>\n      <td id=\"T_e122e_row1_col9\" class=\"data row1 col9\" >46.80</td>\n    </tr>\n    <tr>\n      <th id=\"T_e122e_level0_row2\" class=\"row_heading level0 row2\" >5333</th>\n      <td id=\"T_e122e_row2_col0\" class=\"data row2 col0\" >1.00</td>\n      <td id=\"T_e122e_row2_col1\" class=\"data row2 col1\" >Plot  Area</td>\n      <td id=\"T_e122e_row2_col2\" class=\"data row2 col2\" >Immediate Possession</td>\n      <td id=\"T_e122e_row2_col3\" class=\"data row2 col3\" >Devanahalli</td>\n      <td id=\"T_e122e_row2_col4\" class=\"data row2 col4\" >nan</td>\n      <td id=\"T_e122e_row2_col5\" class=\"data row2 col5\" >Emngs S</td>\n      <td id=\"T_e122e_row2_col6\" class=\"data row2 col6\" >2100 - 5405</td>\n      <td id=\"T_e122e_row2_col7\" class=\"data row2 col7\" >nan</td>\n      <td id=\"T_e122e_row2_col8\" class=\"data row2 col8\" >nan</td>\n      <td id=\"T_e122e_row2_col9\" class=\"data row2 col9\" >177.12</td>\n    </tr>\n    <tr>\n      <th id=\"T_e122e_level0_row3\" class=\"row_heading level0 row3\" >1775</th>\n      <td id=\"T_e122e_row3_col0\" class=\"data row3 col0\" >1.00</td>\n      <td id=\"T_e122e_row3_col1\" class=\"data row3 col1\" >Plot  Area</td>\n      <td id=\"T_e122e_row3_col2\" class=\"data row3 col2\" >Immediate Possession</td>\n      <td id=\"T_e122e_row3_col3\" class=\"data row3 col3\" >IVC Road</td>\n      <td id=\"T_e122e_row3_col4\" class=\"data row3 col4\" >nan</td>\n      <td id=\"T_e122e_row3_col5\" class=\"data row3 col5\" >Orana N</td>\n      <td id=\"T_e122e_row3_col6\" class=\"data row3 col6\" >2000 - 5634</td>\n      <td id=\"T_e122e_row3_col7\" class=\"data row3 col7\" >nan</td>\n      <td id=\"T_e122e_row3_col8\" class=\"data row3 col8\" >nan</td>\n      <td id=\"T_e122e_row3_col9\" class=\"data row3 col9\" >124.00</td>\n    </tr>\n    <tr>\n      <th id=\"T_e122e_level0_row4\" class=\"row_heading level0 row4\" >11019</th>\n      <td id=\"T_e122e_row4_col0\" class=\"data row4 col0\" >1.00</td>\n      <td id=\"T_e122e_row4_col1\" class=\"data row4 col1\" >Plot  Area</td>\n      <td id=\"T_e122e_row4_col2\" class=\"data row4 col2\" >Immediate Possession</td>\n      <td id=\"T_e122e_row4_col3\" class=\"data row4 col3\" >Yelahanka</td>\n      <td id=\"T_e122e_row4_col4\" class=\"data row4 col4\" >nan</td>\n      <td id=\"T_e122e_row4_col5\" class=\"data row4 col5\" >Saaveha</td>\n      <td id=\"T_e122e_row4_col6\" class=\"data row4 col6\" >1200 - 1800</td>\n      <td id=\"T_e122e_row4_col7\" class=\"data row4 col7\" >nan</td>\n      <td id=\"T_e122e_row4_col8\" class=\"data row4 col8\" >nan</td>\n      <td id=\"T_e122e_row4_col9\" class=\"data row4 col9\" >12.75</td>\n    </tr>\n  </tbody>\n</table>\n"
+      }
+    },
+    "152533ece92d4b5d945be99e48804dfc": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "a7a242dae4804098b61cfa136d96ad40": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "86fc9a3c02a64d5b9dd1cc22c4eba133": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_b55a5eefe1b24f3f815900b139439b12",
+        "style": "IPY_MODEL_9830c31d78ee4100b7f7dc6df9c90d98",
+        "value": "<div><p style=\"font-size:0.9em;line-height:1;\"><i>Note - data sampling: Data is sampled from the original dataset, running on 5000 samples out of 13320. Sample size can be controlled with the \"n_samples\" parameter.</i></p></div>"
+      }
+    },
+    "b55a5eefe1b24f3f815900b139439b12": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "9830c31d78ee4100b7f7dc6df9c90d98": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "b4fa9953c13a420b823f9bf8b400e3ad": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_ae2def82facb4ae6978987e76c6049e7",
+        "style": "IPY_MODEL_359c7b6bff624b9ca3c6a0769d0f2452",
+        "value": "<br><a href=\"#summary_YYTQ3Q0S7IC0D5KQH7F7RB8XM-section-VLTHG\" style=\"font-size: 14px;\">Go to top</a>"
+      }
+    },
+    "ae2def82facb4ae6978987e76c6049e7": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "359c7b6bff624b9ca3c6a0769d0f2452": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "e760269ff5cb466f901914407abc1992": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "4e86cbf190bb4777b69f47ce9efeeb9f": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "e99101c4c77c4dacb1a08e9f37d356d5": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "5669c316ff00420db889ca56e8506231": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "8eab82decfc6481296e3ec5824022438": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "82bfb077587149e2a8ddc4e1da418ff6": {
+      "model_name": "VBoxModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "children": [
+          "IPY_MODEL_ceac12657d364bb497fb0ce153b34017",
+          "IPY_MODEL_e180bc1cc7794769bd31f3ffaee674f0"
+        ],
+        "layout": "IPY_MODEL_2027a33e570349be8459e0bd3a20d751"
+      }
+    },
+    "ceac12657d364bb497fb0ce153b34017": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_391e9e1483894b94a0bdc1d160c9bf0d",
+        "style": "IPY_MODEL_068354d8fb714900b79d0fa5d143a4ef"
+      }
+    },
+    "391e9e1483894b94a0bdc1d160c9bf0d": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "068354d8fb714900b79d0fa5d143a4ef": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "e180bc1cc7794769bd31f3ffaee674f0": {
+      "model_name": "AccordionModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [
+          "rendered_html",
+          "jp-RenderedHTMLCommon",
+          "jp-RenderedHTML",
+          "jp-OutputArea-output"
+        ],
+        "_titles": {
+          "0": "Didn't Run"
+        },
+        "children": [
+          "IPY_MODEL_a2c28c1a0c974267a1df5d1024a05612"
+        ],
+        "layout": "IPY_MODEL_b8b18f88505045b28f08c402dcf038a2",
+        "selected_index": null
+      }
+    },
+    "a2c28c1a0c974267a1df5d1024a05612": {
+      "model_name": "HTMLModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {
+        "_dom_classes": [],
+        "layout": "IPY_MODEL_98a799c9cf0d466bb41b746bebe533a3",
+        "style": "IPY_MODEL_7d0eda895bbd44fab715e58d9fc739c1",
+        "value": "<style type=\"text/css\">\n#T_46448 table {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_46448 thead {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_46448 tbody {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_46448 th {\n  text-align: left;\n  white-space: pre-wrap;\n}\n#T_46448 td {\n  text-align: left;\n  white-space: pre-wrap;\n}\n</style>\n<table id=\"T_46448\">\n  <thead>\n    <tr>\n      <th id=\"T_46448_level0_col0\" class=\"col_heading level0 col0\" >Check</th>\n      <th id=\"T_46448_level0_col1\" class=\"col_heading level0 col1\" >Reason</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td id=\"T_46448_row0_col0\" class=\"data row0 col0\" >Conflicting Labels - Train Dataset</td>\n      <td id=\"T_46448_row0_col1\" class=\"data row0 col1\" >ModelValidationError: Check is irrelevant for regressions tasks</td>\n    </tr>\n  </tbody>\n</table>\n"
+      }
+    },
+    "98a799c9cf0d466bb41b746bebe533a3": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "7d0eda895bbd44fab715e58d9fc739c1": {
+      "model_name": "DescriptionStyleModel",
+      "model_module": "@jupyter-widgets/controls",
+      "model_module_version": "1.5.0",
+      "state": {}
+    },
+    "b8b18f88505045b28f08c402dcf038a2": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "2027a33e570349be8459e0bd3a20d751": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "e43d7deaaf964549b83c484d67a8d302": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    },
+    "7f90baac4e0e40c9be5d1e4aeca65379": {
+      "model_name": "LayoutModel",
+      "model_module": "@jupyter-widgets/base",
+      "model_module_version": "1.2.0",
+      "state": {}
+    }
+  }
+}
+</script>
+<script type="application/vnd.jupyter.widget-view+json">
+{"version_major": 2, "version_minor": 0, "model_id": "f4963c90a0de4bd09f0ec593949be7fc"}
+</script>
+
+</body>
+</html>
