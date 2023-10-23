@@ -96,6 +96,12 @@ def data_validation_method(ingest_data):
     X_train_batch_3 = X_train.iloc[4000:6000, :]
     X_train_batch_4 = X_train.iloc[6000:8000, :]
     X_train_batch_5 = X_train.iloc[8000:, :]
+    # split the tst data in batches
+    X_test_batch_1 = X_test.iloc[:2000, :]
+    X_test_batch_2 = X_test.iloc[2000:4000, :]
+    X_test_batch_3 = X_test.iloc[4000:6000, :]
+    X_test_batch_4 = X_test.iloc[6000:8000, :]
+    X_test_batch_5 = X_test.iloc[8000:, :]
 
     # batches for y
     y_train_batch_1 = y_train_series.iloc[:2000, :]
@@ -103,20 +109,39 @@ def data_validation_method(ingest_data):
     y_train_batch_3 = y_train_series.iloc[4000:6000, :]
     y_train_batch_4 = y_train_series.iloc[6000:8000, :]
     y_train_batch_5 = y_train_series.iloc[8000:, :]
+    # batches for y test
+    y_test_batch_1 = y_train_series.iloc[:2000, :]
+    y_test_batch_2 = y_train_series.iloc[2000:4000, :]
+    y_test_batch_3 = y_train_series.iloc[4000:6000, :]
+    y_test_batch_4 = y_train_series.iloc[6000:8000, :]
+    y_test_batch_5 = y_train_series.iloc[8000:, :]
  
     X_train_list_batches = [X_train_batch_1,X_train_batch_2,X_train_batch_3,X_train_batch_4,X_train_batch_5]
     y_train_list_batches = [y_train_batch_1, y_train_batch_2, y_train_batch_3, y_train_batch_4, y_train_batch_5]
+    X_test_list_batches = [X_test_batch_1,X_test_batch_2,X_test_batch_3,X_test_batch_4,X_test_batch_5]
+    y_test_list_batches = [y_test_batch_1,y_test_batch_2, y_test_batch_3, y_test_batch_4, y_test_batch_5]
     # create whylog profiles for the datasets
     for i, X_train_batch in enumerate(X_train_list_batches):
         # calc diff in dates
         dt = datetime.now() - timedelta(days = i)
         # create profile for each day
-        profile = why.log(X_train_batch).profile()
+        X_train_profile = why.log(X_train_batch).profile()
         #set time stamp for each batch or day data
-        profile.set_dataset_timestamp(dt)
+        X_train_profile.set_dataset_timestamp(dt)
         # write the profile to the whylabs platform
-        writer.write(file=profile.view())
-    return X_train_list_batches, y_train_list_batches
+        writer.write(file=X_train_profile.view())
+
+    for i, X_test_batch in enumerate(X_test_list_batches):
+        # calc diff in dates
+        dt = datetime.now() - timedelta(days = i)
+        # create profile for each day
+        X_test_profile = why.log(X_test_batch).profile()
+        #set time stamp for each batch or day data
+        X_test_profile.set_dataset_timestamp(dt)
+        # write the profile to the whylabs platform
+        writer.write(file=X_test_profile.view())
+    
+    return X_train_list_batches, y_train_list_batches, X_train_list_batches, y_test_list_batches
     
 metrics_dict = {}
 
@@ -136,7 +161,7 @@ def train_model(data_validation_method,ingest_data) -> tuple:
     counter = 0
 
     X_train,X_test,y_test_series,y_train_series = ingest_data
-    X_baches_list, y_batches_list = data_validation_method
+    X_baches_list, y_batches_list,X_test_baches_list, y_test_batches_list = data_validation_method
 
     scaler = StandardScaler()
     mlmodel = GradientBoostingRegressor(n_estimators=500)
@@ -156,15 +181,21 @@ def train_model(data_validation_method,ingest_data) -> tuple:
           # experiment.log_metric('train-accuracy', accuracy_value)
           # experiment.log_metric('train-MAE', mae_value)
           counter += 1
+    
+    counter = 0
 
-        # with experiment.test():
-        #   accuracy_value, mae_value = get_metrics(X_test, y_test, model_pipeline)
-        #   metrics_dict[f'test-accuracy :{counter}'] = accuracy_value
-        #   metrics_dict[f'test-MAE :{counter}'] = mae_value
+    for j, X_test_batch in enumerate(X_test_baches_list):
+        y_test_batch = y_test_batches_list[j]
+        with experiment.test():
+          #X_train_pred = model_pipeline.predict(X_train_batch)
+          accuracy_value, mae_value = get_metrics(X_test_batch, y_test_batch, model_pipeline)
+          metrics_dict[f'test-accuracy :{counter}'] = accuracy_value
+          metrics_dict[f'test-MAE :{counter}'] = mae_value
         #   # experiment.log_metric('test-accuracy', accuracy_value)
         #   # experiment.log_metric('test-MAE', mae_value)
         #   model_n_score.append([{'model_name':mlmodel,
         #                         'r2_score':accuracy_value}])
+        counter +=1
 
     experiment.log_metrics(metrics_dict)
    
