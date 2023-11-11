@@ -25,7 +25,8 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.compose import make_column_transformer
 from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.metrics import r2_score, mean_absolute_error
-
+from fast_ml.model_development import train_valid_test_split
+from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestRegressor,GradientBoostingRegressor,AdaBoostRegressor,ExtraTreesRegressor
 # details for logging in whylabs
 os.environ["WHYLABS_DEFAULT_ORG_ID"] = "org-M3RPnk" # ORG-ID is case sensitive
@@ -53,18 +54,27 @@ class IngestData:
         pass
 
     def get_data(self):
-        X_train = pd.read_parquet("C:\\Users\\Thobs\\Desktop\\Portfolio\\Projects\\Data Science Projects\\Machine Learning Project 12 - Bangalore House Prediction\\dataset\\feature_engineered_data\\X_train_df.parquet")
-        X_test = pd.read_parquet("C:\\Users\\Thobs\\Desktop\\Portfolio\\Projects\\Data Science Projects\\Machine Learning Project 12 - Bangalore House Prediction\\dataset\\feature_engineered_data\\X_test_df.parquet")
-        y_train = pd.read_parquet("C:\\Users\\Thobs\\Desktop\\Portfolio\\Projects\\Data Science Projects\\Machine Learning Project 12 - Bangalore House Prediction\\dataset\\feature_engineered_data\\y_train.parquet")
-        y_test = pd.read_parquet("C:\\Users\\Thobs\\Desktop\\Portfolio\\Projects\\Data Science Projects\\Machine Learning Project 12 - Bangalore House Prediction\\dataset\\feature_engineered_data\\y_test.parquet")
+        # X_train = pd.read_parquet("C:\\Users\\Thobs\\Desktop\\Portfolio\\Projects\\Data Science Projects\\Machine Learning Project 12 - Bangalore House Prediction\\dataset\\feature_engineered_data\\X_train_df.parquet")
+        # X_test = pd.read_parquet("C:\\Users\\Thobs\\Desktop\\Portfolio\\Projects\\Data Science Projects\\Machine Learning Project 12 - Bangalore House Prediction\\dataset\\feature_engineered_data\\X_test_df.parquet")
+        # y_train = pd.read_parquet("C:\\Users\\Thobs\\Desktop\\Portfolio\\Projects\\Data Science Projects\\Machine Learning Project 12 - Bangalore House Prediction\\dataset\\feature_engineered_data\\y_train.parquet")
+        # y_test = pd.read_parquet("C:\\Users\\Thobs\\Desktop\\Portfolio\\Projects\\Data Science Projects\\Machine Learning Project 12 - Bangalore House Prediction\\dataset\\feature_engineered_data\\y_test.parquet")
+        dataset = pd.read_parquet("")
+        X_train, y_train, X_val, y_val, X_test, y_test = train_valid_test_split(df=dataset,
+                                                                                target='price',
+                                                                                train_size=0.6,
+                                                                                valid_size=0.2,
+                                                                                test_size=0.2,
+                                                                                random_state=42)
         # for training
         # need to drop the price column which is the dependent or target feature
-        X_train.drop(columns=['price'],inplace=True)
-        X_test.drop(columns=['price'],inplace=True)
+        # reset index 
+        for data in [X_train, y_train, X_val, y_val, X_test, y_test]:
+            data.reset_index(drop=True, inplace=True)
+
         # change y values to be series
         # y_train_series = pd.Series(y_train)
         # y_test_series = pd.Series(y_test)
-        return X_train,X_test,y_test,y_train
+        return X_train,X_test,X_val,y_train,y_test,y_val
     
 @asset
 def ingest_data()-> tuple:
@@ -77,8 +87,8 @@ def ingest_data()-> tuple:
     print("getting data from data repo/feature store")
     try:
         ingest_data = IngestData()
-        X_train,X_test,y_test_series,y_train_series = ingest_data.get_data()
-        return X_train,X_test,y_test_series,y_train_series
+        X_train,X_test,X_val,y_train,y_test,y_val = ingest_data.get_data()
+        return X_train,X_test,X_val,y_train,y_test,y_val
     except Exception as e:
         logging.error(e)
         raise e
@@ -88,7 +98,7 @@ def ingest_data()-> tuple:
 def data_validation_method(ingest_data):
     print("data validtion step")
     writer = WhyLabsWriter()
-    X_train,X_test,y_test_series,y_train_series = ingest_data
+    X_train,X_test,X_val,y_train,y_test,y_val = ingest_data
     
     # split the train dataset into batches as well as batch dataset
     X_train_batch_1 = X_train.iloc[:2000, :]
@@ -102,24 +112,42 @@ def data_validation_method(ingest_data):
     X_test_batch_3 = X_test.iloc[4000:6000, :]
     X_test_batch_4 = X_test.iloc[6000:8000, :]
     X_test_batch_5 = X_test.iloc[8000:, :]
+    # split for evaluation in to batches
+    X_val_batch_1 = X_val.iloc[:2000, :]
+    X_val_batch_2 = X_val.iloc[2000:4000, :]
+    X_val_batch_3 = X_val.iloc[4000:6000, :]
+    X_val_batch_4 = X_val.iloc[6000:8000, :]
+    X_val_batch_5 = X_val.iloc[8000:, :]
 
     # batches for y
-    y_train_batch_1 = y_train_series.iloc[:2000, :]
-    y_train_batch_2 = y_train_series.iloc[2000:4000, :]
-    y_train_batch_3 = y_train_series.iloc[4000:6000, :]
-    y_train_batch_4 = y_train_series.iloc[6000:8000, :]
-    y_train_batch_5 = y_train_series.iloc[8000:, :]
+    y_train_batch_1 = y_train.iloc[:2000, :]
+    y_train_batch_2 = y_train.iloc[2000:4000, :]
+    y_train_batch_3 = y_train.iloc[4000:6000, :]
+    y_train_batch_4 = y_train.iloc[6000:8000, :]
+    y_train_batch_5 = y_train.iloc[8000:, :]
     # batches for y test
-    y_test_batch_1 = y_train_series.iloc[:2000, :]
-    y_test_batch_2 = y_train_series.iloc[2000:4000, :]
-    y_test_batch_3 = y_train_series.iloc[4000:6000, :]
-    y_test_batch_4 = y_train_series.iloc[6000:8000, :]
-    y_test_batch_5 = y_train_series.iloc[8000:, :]
+    y_test_batch_1 = y_test.iloc[:2000, :]
+    y_test_batch_2 = y_test.iloc[2000:4000, :]
+    y_test_batch_3 = y_test.iloc[4000:6000, :]
+    y_test_batch_4 = y_test.iloc[6000:8000, :]
+    y_test_batch_5 = y_test.iloc[8000:, :]
  
+    # batches for y val
+    y_val_batch_1 = y_val.iloc[:2000, :]
+    y_val_batch_2 = y_val.iloc[2000:4000, :]
+    y_val_batch_3 = y_val.iloc[4000:6000, :]
+    y_val_batch_4 = y_val.iloc[6000:8000, :]
+    y_val_batch_5 = y_val.iloc[8000:, :]
+
+
     X_train_list_batches = [X_train_batch_1,X_train_batch_2,X_train_batch_3,X_train_batch_4,X_train_batch_5]
     y_train_list_batches = [y_train_batch_1, y_train_batch_2, y_train_batch_3, y_train_batch_4, y_train_batch_5]
+
     X_test_list_batches = [X_test_batch_1,X_test_batch_2,X_test_batch_3,X_test_batch_4,X_test_batch_5]
     y_test_list_batches = [y_test_batch_1,y_test_batch_2, y_test_batch_3, y_test_batch_4, y_test_batch_5]
+
+    X_val_list_batches = [X_val_batch_1, X_val_batch_2, X_val_batch_3, X_val_batch_4, X_val_batch_5]
+    y_val_list_bacthes = [y_val_batch_1, y_val_batch_2, y_val_batch_3, y_val_batch_4, y_val_batch_5]
     # create whylog profiles for the datasets
     for i, X_train_batch in enumerate(X_train_list_batches):
         # calc diff in dates
@@ -140,8 +168,19 @@ def data_validation_method(ingest_data):
         X_test_profile.set_dataset_timestamp(dt)
         # write the profile to the whylabs platform
         writer.write(file=X_test_profile.view())
+
+    for i, X_val_batch in enumerate(X_val_list_batches):
+        # calc diff in dates
+        dt = datetime.now() - timedelta(days = i)
+        # create profile for each day
+        X_val_profile = why.log(X_val_batch).profile()
+        #set time stamp for each batch or day data
+        X_val_profile.set_dataset_timestamp(dt)
+        # write the profile to the whylabs platform
+        writer.write(file=X_test_profile.view())
+
     
-    return X_train_list_batches, y_train_list_batches, X_train_list_batches, y_test_list_batches
+    return X_train_list_batches, y_train_list_batches, X_test_list_batches, y_test_list_batches, X_val_list_batches, y_val_list_bacthes
     
 metrics_dict = {}
 
@@ -160,19 +199,19 @@ def train_model(data_validation_method,ingest_data) -> tuple:
     experiment = tracking_datails_init()
     counter = 0
 
-    X_train,X_test,y_test_series,y_train_series = ingest_data
-    X_baches_list, y_batches_list,X_test_baches_list, y_test_batches_list = data_validation_method
+    # X_train,X_test,y_test_series,y_train_series = ingest_data
+    X_train_list_batches, y_train_list_batches, X_test_list_batches, y_test_list_batches, _, _ = data_validation_method
 
     scaler = StandardScaler()
     mlmodel = GradientBoostingRegressor(n_estimators=500)
     
     column_transformer = make_column_transformer((OneHotEncoder(sparse=False), [0]), remainder='passthrough')
     model_pipeline = make_pipeline(column_transformer, scaler, mlmodel)
-    for i, X_train_batch in enumerate(X_baches_list):
+    for i, X_train_batch in enumerate(X_train_list_batches):
     
     #     mlmodel = model_class()
        
-        y_train_batch = y_batches_list[i]
+        y_train_batch = y_train_list_batches[i]
         with experiment.train():
           model_pipeline.fit(X_train_batch,y_train_batch)
           accuracy_value, mae_value = get_metrics(X_train_batch, y_train_batch, model_pipeline)
@@ -184,8 +223,8 @@ def train_model(data_validation_method,ingest_data) -> tuple:
     
     counter = 0
 
-    for j, X_test_batch in enumerate(X_test_baches_list):
-        y_test_batch = y_test_batches_list[j]
+    for j, X_test_batch in enumerate(X_test_list_batches):
+        y_test_batch = y_test_list_batches[j]
         with experiment.test():
           #X_train_pred = model_pipeline.predict(X_train_batch)
           accuracy_value, mae_value = get_metrics(X_test_batch, y_test_batch, model_pipeline)
@@ -199,48 +238,97 @@ def train_model(data_validation_method,ingest_data) -> tuple:
 
     experiment.log_metrics(metrics_dict)
    
-
-
-    # pickle.dump(better_model,open("house-model.pkl",'wb'))
-
-    # model = pickle.load(open("house-model.pkl",'rb'))
-
-    # # log the better moddel  on model resgistry
-    # experiment.log_model("house price pred",'house-model.pkl')
-
-    # # register the logged model into model registry
-    # experiment.register_model("house price pred")
-
-    # # track the version of the model
-    # api = API(api_key=API_key)
     model_name = "house price pred"
-    # model = api.get_model(workspace="thobela", model_name='house-price-pred')
-
-    # model.set_status(version='1.0.0', status="Development")
-    # model.add_tag(version='1.0.0', tag='first version of the model')
-
+   
     experiment.end()
 
     model_stage = "Development"
     model_version = '1.0.0'
-    return model_name, model_stage, model_version
+    return model_name, model_stage, model_version, mlmodel
 
 
 @asset
-def model_testing(train_model, ingest_data):
-    print("model Testing")
-
-@asset
-def model_tuning(model_testing):
+def model_tuning(train_model,data_validation_method):
     print("model validation")
+    experiment = tracking_datails_init()
+    
+    X_train_list_batches, y_train_list_batches, X_test_list_batches, y_test_list_batches, _, _ = data_validation_method
+    param_grid = {
+    'learning_rate': [0.01, 0.1],
+    'n_estimators': [100, 500],
+    'max_depth': [3, 5],
+    'colsample_bytree': [0.5, 0.9],
+    'gamma': [0, 0.1, 0.5],
+    'reg_alpha': [0, 1, 10],
+    'reg_lambda': [0, 1, 10],
+}
+    
+    mlmodel = GradientBoostingRegressor(n_estimators=500)
+    grid_search = GridSearchCV(mlmodel, param_grid=param_grid, cv=5, n_jobs=-1, verbose=1, 
+                           scoring="neg_root_mean_squared_error", )
+
+    scaler = StandardScaler()
+    column_transformer = make_column_transformer((OneHotEncoder(sparse=False), [0]), remainder='passthrough')
+    model_pipeline = make_pipeline(column_transformer, scaler, grid_search)
+
+    for i, X_train_batch in enumerate(X_train_list_batches):
+        y_train_batch = y_train_list_batches[i]
+        with experiment.train():
+            model_pipeline.fit(X_train_batch,y_train_batch)
+            accuracy_value, mae_value = get_metrics(X_train_batch, y_train_batch, model_pipeline)
+            metrics_dict[f'train-accuracy :{counter}'] = accuracy_value
+            metrics_dict[f'train-MAE :{counter}'] = mae_value
+            counter += 1
+    
+    counter = 0
+
+    print("Best estimator: ", grid_search.best_estimator_)
+    print("Best score: ", grid_search.best_score_)
+    print("Best hyperparameters: ", grid_search.best_params_)
+
+    return grid_search.best_estimator_, scaler, column_transformer
 
 @asset
-def model_validation(ingest_data,model_tuning):
+def model_validation(model_tuning, data_validation_method):
     print("model validation")
+    experiment = tracking_datails_init()
+    chosen_mlmodel,scaler, column_transformer = model_tuning
+    _, _, _, _, X_val_list_batches, y_val_list_bacthes = data_validation_method
+
+    model_pipeline = make_pipeline(column_transformer, scaler, chosen_mlmodel)
+    counter = 0
+
+    for j, X_val_batch in enumerate(X_val_list_batches):
+        y_val_batch = y_val_list_bacthes[j]
+        with experiment.test():
+          accuracy_value, mae_value = get_metrics(X_val_batch, y_val_batch, model_pipeline)
+          metrics_dict[f'test-accuracy :{counter}'] = accuracy_value
+          metrics_dict[f'test-MAE :{counter}'] = mae_value
+        counter +=1
+
+    experiment.log_metrics(metrics_dict)
+
+    experiment.end()
+
+    return chosen_mlmodel
+
 
 @asset
 def model_registry(model_validation):
     print("model registry")
+    model_name = "house price pred"
+    model_stage = "Development"
+    model_version = '1.0.0'
+    chosen_mlmodel = model_validation
+    experiment = tracking_datails_init()
+
+    experiment.log_model(model_name, chosen_mlmodel)
+
+    api = API()
+    model = api.get_model(workspace='thobela', model_name=model_name)
+
+    model.set_status(version=model_version, status=model_stage)
+    model.add_tag(version=model_version, tag='new_model')
 
 
 
