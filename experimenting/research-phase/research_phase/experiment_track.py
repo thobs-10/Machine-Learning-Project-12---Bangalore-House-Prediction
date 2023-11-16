@@ -58,7 +58,7 @@ class IngestData:
         # X_test = pd.read_parquet("C:\\Users\\Thobs\\Desktop\\Portfolio\\Projects\\Data Science Projects\\Machine Learning Project 12 - Bangalore House Prediction\\dataset\\feature_engineered_data\\X_test_df.parquet")
         # y_train = pd.read_parquet("C:\\Users\\Thobs\\Desktop\\Portfolio\\Projects\\Data Science Projects\\Machine Learning Project 12 - Bangalore House Prediction\\dataset\\feature_engineered_data\\y_train.parquet")
         # y_test = pd.read_parquet("C:\\Users\\Thobs\\Desktop\\Portfolio\\Projects\\Data Science Projects\\Machine Learning Project 12 - Bangalore House Prediction\\dataset\\feature_engineered_data\\y_test.parquet")
-        dataset = pd.read_parquet("")
+        dataset = pd.read_parquet("C:\\Users\\Thobs\\Desktop\\Portfolio\\Projects\\Data Science Projects\\Machine Learning Project 12 - Bangalore House Prediction\\dataset\\cleaned_data.parquet")
         X_train, y_train, X_val, y_val, X_test, y_test = train_valid_test_split(df=dataset,
                                                                                 target='price',
                                                                                 train_size=0.6,
@@ -101,43 +101,43 @@ def data_validation_method(ingest_data):
     X_train,X_test,X_val,y_train,y_test,y_val = ingest_data
     
     # split the train dataset into batches as well as batch dataset
-    X_train_batch_1 = X_train.iloc[:2000, :]
-    X_train_batch_2 = X_train.iloc[2000:4000, :]
-    X_train_batch_3 = X_train.iloc[4000:6000, :]
-    X_train_batch_4 = X_train.iloc[6000:8000, :]
-    X_train_batch_5 = X_train.iloc[8000:, :]
+    X_train_batch_1 = X_train.iloc[:1000, :]
+    X_train_batch_2 = X_train.iloc[1000:2000, :]
+    X_train_batch_3 = X_train.iloc[2000:3000, :]
+    X_train_batch_4 = X_train.iloc[3000:4000, :]
+    X_train_batch_5 = X_train.iloc[4000:, :]
     # split the tst data in batches
-    X_test_batch_1 = X_test.iloc[:2000, :]
-    X_test_batch_2 = X_test.iloc[2000:4000, :]
-    X_test_batch_3 = X_test.iloc[4000:6000, :]
-    X_test_batch_4 = X_test.iloc[6000:8000, :]
-    X_test_batch_5 = X_test.iloc[8000:, :]
+    X_test_batch_1 = X_test.iloc[:250, :]
+    X_test_batch_2 = X_test.iloc[250:450, :]
+    X_test_batch_3 = X_test.iloc[450:650, :]
+    X_test_batch_4 = X_test.iloc[650:850, :]
+    X_test_batch_5 = X_test.iloc[850:, :]
     # split for evaluation in to batches
-    X_val_batch_1 = X_val.iloc[:2000, :]
-    X_val_batch_2 = X_val.iloc[2000:4000, :]
-    X_val_batch_3 = X_val.iloc[4000:6000, :]
-    X_val_batch_4 = X_val.iloc[6000:8000, :]
-    X_val_batch_5 = X_val.iloc[8000:, :]
+    X_val_batch_1 = X_val.iloc[:250, :]
+    X_val_batch_2 = X_val.iloc[250:450, :]
+    X_val_batch_3 = X_val.iloc[450:650, :]
+    X_val_batch_4 = X_val.iloc[650:850, :]
+    X_val_batch_5 = X_val.iloc[850:, :]
 
     # batches for y
-    y_train_batch_1 = y_train.iloc[:2000, :]
-    y_train_batch_2 = y_train.iloc[2000:4000, :]
-    y_train_batch_3 = y_train.iloc[4000:6000, :]
-    y_train_batch_4 = y_train.iloc[6000:8000, :]
-    y_train_batch_5 = y_train.iloc[8000:, :]
+    y_train_batch_1 = y_train.iloc[:1000]
+    y_train_batch_2 = y_train.iloc[1000:2000]
+    y_train_batch_3 = y_train.iloc[2000:3000]
+    y_train_batch_4 = y_train.iloc[3000:4000]
+    y_train_batch_5 = y_train.iloc[4000:]
     # batches for y test
-    y_test_batch_1 = y_test.iloc[:2000, :]
-    y_test_batch_2 = y_test.iloc[2000:4000, :]
-    y_test_batch_3 = y_test.iloc[4000:6000, :]
-    y_test_batch_4 = y_test.iloc[6000:8000, :]
-    y_test_batch_5 = y_test.iloc[8000:, :]
+    y_test_batch_1 = y_test.iloc[:250]
+    y_test_batch_2 = y_test.iloc[250:450]
+    y_test_batch_3 = y_test.iloc[450:650]
+    y_test_batch_4 = y_test.iloc[650:850]
+    y_test_batch_5 = y_test.iloc[850:]
  
     # batches for y val
-    y_val_batch_1 = y_val.iloc[:2000, :]
-    y_val_batch_2 = y_val.iloc[2000:4000, :]
-    y_val_batch_3 = y_val.iloc[4000:6000, :]
-    y_val_batch_4 = y_val.iloc[6000:8000, :]
-    y_val_batch_5 = y_val.iloc[8000:, :]
+    y_val_batch_1 = y_val.iloc[:350]
+    y_val_batch_2 = y_val.iloc[250:450]
+    y_val_batch_3 = y_val.iloc[450:650]
+    y_val_batch_4 = y_val.iloc[650:850]
+    y_val_batch_5 = y_val.iloc[850:]
 
 
     X_train_list_batches = [X_train_batch_1,X_train_batch_2,X_train_batch_3,X_train_batch_4,X_train_batch_5]
@@ -182,7 +182,7 @@ def data_validation_method(ingest_data):
     
     return X_train_list_batches, y_train_list_batches, X_test_list_batches, y_test_list_batches, X_val_list_batches, y_val_list_bacthes
     
-metrics_dict = {}
+
 
 model_n_score = []
 def get_metrics(X_train, y_train, model):
@@ -193,12 +193,13 @@ def get_metrics(X_train, y_train, model):
 
 
 @asset
-def train_model(data_validation_method,ingest_data) -> tuple:
+def train_model(data_validation_method) -> tuple:
     
     print('Model Training')
     experiment = tracking_datails_init()
     counter = 0
-
+    train_metrics_dict = {}
+    test_metrics_dict = {}
     # X_train,X_test,y_test_series,y_train_series = ingest_data
     X_train_list_batches, y_train_list_batches, X_test_list_batches, y_test_list_batches, _, _ = data_validation_method
 
@@ -215,12 +216,13 @@ def train_model(data_validation_method,ingest_data) -> tuple:
         with experiment.train():
           model_pipeline.fit(X_train_batch,y_train_batch)
           accuracy_value, mae_value = get_metrics(X_train_batch, y_train_batch, model_pipeline)
-          metrics_dict[f'train-accuracy :{counter}'] = accuracy_value
-          metrics_dict[f'train-MAE :{counter}'] = mae_value
+          train_metrics_dict[f'train-accuracy :{counter}'] = accuracy_value
+          train_metrics_dict[f'train-MAE :{counter}'] = mae_value
           # experiment.log_metric('train-accuracy', accuracy_value)
           # experiment.log_metric('train-MAE', mae_value)
           counter += 1
     
+    experiment.log_metrics(train_metrics_dict)
     counter = 0
 
     for j, X_test_batch in enumerate(X_test_list_batches):
@@ -228,15 +230,15 @@ def train_model(data_validation_method,ingest_data) -> tuple:
         with experiment.test():
           #X_train_pred = model_pipeline.predict(X_train_batch)
           accuracy_value, mae_value = get_metrics(X_test_batch, y_test_batch, model_pipeline)
-          metrics_dict[f'test-accuracy :{counter}'] = accuracy_value
-          metrics_dict[f'test-MAE :{counter}'] = mae_value
+          test_metrics_dict[f'test-accuracy :{counter}'] = accuracy_value
+          test_metrics_dict[f'test-MAE :{counter}'] = mae_value
         #   # experiment.log_metric('test-accuracy', accuracy_value)
         #   # experiment.log_metric('test-MAE', mae_value)
         #   model_n_score.append([{'model_name':mlmodel,
         #                         'r2_score':accuracy_value}])
         counter +=1
 
-    experiment.log_metrics(metrics_dict)
+    experiment.log_metrics(test_metrics_dict)
    
     model_name = "house price pred"
    
