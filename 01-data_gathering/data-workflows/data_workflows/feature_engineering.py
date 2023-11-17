@@ -4,6 +4,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.compose import make_column_transformer
 from sklearn.preprocessing import OneHotEncoder,StandardScaler
 from sklearn.model_selection import train_test_split
+from fast_ml.model_development import train_valid_test_split
 
 import pandas as pd  # Add new imports to the top of `assets.py`
 from dagster import (
@@ -92,9 +93,16 @@ def split_dataset(drop_correlated_columns:pd.DataFrame, column_transform_categor
     # ['area_type',	'availability',	'location',	'society',	'total_sqft',	'bath'	,'balcony',	'price_per_sqft']
     X = drop_correlated_columns.copy()
     y = column_transform_categorical[1]
+    X['price'] = y
     #split to train and test
-    X_train, X_test ,y_train, y_test = train_test_split(X,y,test_size=0.2, random_state=0)
-    split_data = [X_train, X_test ,y_train, y_test]
+    # X_train, X_test ,y_train, y_test = train_test_split(X,y,test_size=0.2, random_state=0)
+    X_train, y_train, X_val, y_val, X_test, y_test = train_valid_test_split(df=X,
+                                                                            target='price',
+                                                                            train_size=0.6,
+                                                                            valid_size=0.2,
+                                                                            test_size=0.2,
+                                                                            random_state=42)
+    split_data = [X_train, y_train, X_val, y_val, X_test, y_test]
     return split_data
 
 # scale/standardize/normilization
@@ -102,26 +110,36 @@ def split_dataset(drop_correlated_columns:pd.DataFrame, column_transform_categor
 def scale_data(split_dataset:list)-> list:
     '''standardization of the dataset values'''
     X_train = split_dataset[0]
-    X_test = split_dataset[1]
+    X_val = split_dataset[2]
+    X_test = split_dataset[4]
+
+    y_train = split_dataset[1]
+    y_val = split_dataset[3]
+    y_test = split_dataset[5]
+
     scaler = StandardScaler()
     # X_train_scaled = scaler.fit_transform(X_train)
     # X_test_scaled = scaler.transform(X_test)
-    scaled_dataset_list = [X_train, X_test]
+    scaled_dataset_list = [X_train,X_val, X_test, y_train, y_val, y_test]
     return scaled_dataset_list
 
 #save dataset
 def save_engineered_data(scale_data:list, split_dataset:list)->None:
 
     X_train_scaled = scale_data[0]
-    X_test_scaled = scale_data[1]
+    X_val_scaled = scale_data[2]
+    X_test_scaled = scale_data[4]
 
-    y_train = split_dataset[2]
-    y_test = split_dataset[3]
+    y_train = split_dataset[1]
+    y_val = split_dataset[3]
+    y_test = split_dataset[5]
 
-    X_train_scaled.to_parquet('datatse\\X_train_df.parquet')
-    X_test_scaled.to_parquet('dataset\\X_test_df.parquet')
-    y_train.to_csv('dataset\\y_train.parquet')
-    y_test.to_csv('dataset\\y_test.parquet')
+    X_train_scaled.to_parquet('datatse\\feature_engineered_data\\X_train_df_v2.parquet')
+    X_val_scaled.to_parquet('dataset\\feature_engineered_data\\X_val_df_v2.parquet')
+    X_test_scaled.to_parquet('dataset\\feature_engineered_data\\X_test_df_v2.parquet')
+    y_train.to_csv('dataset\\feature_engineered_data\\y_train_v2.parquet')
+    y_val.to_parquet('dataset\\feature_engineered_data\\y_val_v2.parquet')
+    y_test.to_csv('dataset\\feature_engineered_data\\y_test.parquet')
 
 
 

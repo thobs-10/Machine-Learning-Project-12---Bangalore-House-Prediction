@@ -14,7 +14,7 @@ from dagster import (
 @asset
 def get_data()-> tuple:
     '''fetch raw data'''
-    df = pd.read_csv('C:\\Users\\Cash Crusaders\\\Desktop\\My Portfolio\\Projects\\Data Science Projects\\Machine Learning Project 12 - Bangalore House Prediction\dataset\\archive (1)\\Bengaluru_House_Data.csv')
+    df = pd.read_csv('C:\\Users\\Thobs\\Desktop\\Portfolio\\Projects\\Data Science Projects\\Machine Learning Project 12 - Bangalore House Prediction\\dataset\\archive (1)\\Bengaluru_House_Data.csv')
     features_df = df.copy()
     y_df = df.drop(columns=['area_type','availability','location','size','society','total_sqft','bath','balcony'])
     # y_df.head()
