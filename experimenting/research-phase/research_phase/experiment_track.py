@@ -196,7 +196,7 @@ def get_metrics(X_train, y_train, model):
 def train_model(data_validation_method) -> tuple:
     
     print('Model Training')
-    experiment = tracking_datails_init()
+    # experiment = tracking_datails_init()
     counter = 0
     train_metrics_dict = {}
     test_metrics_dict = {}
@@ -213,37 +213,42 @@ def train_model(data_validation_method) -> tuple:
     #     mlmodel = model_class()
        
         y_train_batch = y_train_list_batches[i]
-        with experiment.train():
-          model_pipeline.fit(X_train_batch,y_train_batch)
-          accuracy_value, mae_value = get_metrics(X_train_batch, y_train_batch, model_pipeline)
-          train_metrics_dict[f'train-accuracy :{counter}'] = accuracy_value
-          train_metrics_dict[f'train-MAE :{counter}'] = mae_value
+        y_test_batch = y_test_list_batches[i]
+        X_test_batch = X_test_list_batches[i]
+        # with experiment.train():
+        model_pipeline.fit(X_train_batch,y_train_batch)
+        accuracy_value, mae_value = get_metrics(X_train_batch, y_train_batch, model_pipeline)
+        train_metrics_dict[f'train-accuracy :{counter}'] = accuracy_value
+        train_metrics_dict[f'train-MAE :{counter}'] = mae_value
+        val_acc , val_mae = get_metrics(X_test_batch,y_test_batch, model_pipeline)
           # experiment.log_metric('train-accuracy', accuracy_value)
           # experiment.log_metric('train-MAE', mae_value)
-          counter += 1
+        counter += 1
     
-    experiment.log_metrics(train_metrics_dict)
+    # experiment.log_metrics(train_metrics_dict)
     counter = 0
 
-    for j, X_test_batch in enumerate(X_test_list_batches):
-        y_test_batch = y_test_list_batches[j]
-        with experiment.test():
+    # for j, X_test_batch in enumerate(X_test_list_batches):
+    #     y_test_batch = y_test_list_batches[j]
+        # with experiment.test():
           #X_train_pred = model_pipeline.predict(X_train_batch)
-          accuracy_value, mae_value = get_metrics(X_test_batch, y_test_batch, model_pipeline)
-          test_metrics_dict[f'test-accuracy :{counter}'] = accuracy_value
-          test_metrics_dict[f'test-MAE :{counter}'] = mae_value
+        # X_test_batch_transformed = column_transformer.transform(X_test_batch)
+        # y_pred = model_pipeline.predict(X_test_batch)
+        # acc_val = r2_score(y_test_batch, y_pred)
+        # mae_val = mean_absolute_error(y_test_batch,y_pred)
+        # test_metrics_dict[f'test-MAE :{counter}'] = mae_val
         #   # experiment.log_metric('test-accuracy', accuracy_value)
         #   # experiment.log_metric('test-MAE', mae_value)
         #   model_n_score.append([{'model_name':mlmodel,
         #                         'r2_score':accuracy_value}])
-        counter +=1
+        # counter +=1
 
-    experiment.log_metrics(test_metrics_dict)
+    # experiment.log_metrics(test_metrics_dict)
    
+    
+   
+    # experiment.end()
     model_name = "house price pred"
-   
-    experiment.end()
-
     model_stage = "Development"
     model_version = '1.0.0'
     return model_name, model_stage, model_version, mlmodel
